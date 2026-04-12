@@ -6540,7 +6540,32 @@ document.addEventListener('DOMContentLoaded', ()=>{
   function enterApp(userData){
     document.getElementById('auth-overlay').classList.add('hidden');
     window._currentUser=userData;
-    if(typeof render==='function')render();
+    // Firebase 데이터 로드 후 render
+    const loadAndRender = async () => {
+      try {
+        const snap = await getDocs(collection(db,'cells'));
+        snap.forEach((docSnap) => {
+          const data = docSnap.data(), cell = docSnap.id;
+          if(data.members) localStorage.setItem('elim_엘림교회_'+cell+'_Members', JSON.stringify(data.members));
+          if(data.groups)  localStorage.setItem('elim_엘림교회_'+cell+'_Groups',  JSON.stringify(data.groups));
+          if(data.schedules) localStorage.setItem('elim_엘림교회_'+cell+'_Schedules', JSON.stringify(data.schedules));
+          if(data.meetings)  localStorage.setItem('elim_엘림교회_'+cell+'_Meetings',  JSON.stringify(data.meetings));
+        });
+        // 모든 셀 멤버 통합
+        const ALL = ['여호와샬롬','예수사랑','여호와라파','한마음','밀알','감사','여호와이레','유초등부','중고등부','청년대학','새소식반'];
+        const merged = [];
+        ALL.forEach(cell => {
+          const mems = JSON.parse(localStorage.getItem('elim_엘림교회_'+cell+'_Members')||'[]');
+          mems.forEach(m => merged.push(Object.assign({},m,{_sourceCell:cell})));
+        });
+        if(merged.length > 0) {
+          members = merged;
+          localStorage.setItem('elim_엘림교회_엘림교회_Members', JSON.stringify(members));
+        }
+      } catch(e) { console.log('loadAndRender:', e.message); }
+      if(typeof render==='function') render();
+    };
+    loadAndRender();
   }
 
   // ── 승인 관리 ──
