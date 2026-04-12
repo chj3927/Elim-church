@@ -4260,19 +4260,22 @@ html += '</div>';
     // ── 승인 관리 탭 ──
     if(homeTab==='approval') {
       const pendingList = window._pendingUsers || [];
+      const approvedList = window._approvedUsers || [];
       html += '<div style="margin-top:12px">';
-      html += '<div style="font-size:14px;font-weight:800;color:#1A1814;margin-bottom:12px">가입 승인 관리</div>';
+
+      // ── 대기중 섹션 ──
+      html += '<div style="font-size:13px;font-weight:800;color:#C96442;margin-bottom:8px;letter-spacing:0.03em">⏳ 승인 대기 ('+pendingList.length+')</div>';
       if(pendingList.length === 0) {
-        html += '<div style="text-align:center;padding:40px;color:#9CA3AF;background:#F5F0E8;border-radius:16px">';
-        html += '<div style="font-size:40px;margin-bottom:10px">✅</div>';
-        html += '<div style="font-size:14px">대기중인 가입 신청이 없습니다</div>';
+        html += '<div style="text-align:center;padding:24px;color:#9CA3AF;background:#F5F0E8;border-radius:14px;margin-bottom:16px">';
+        html += '<div style="font-size:28px;margin-bottom:6px">✅</div>';
+        html += '<div style="font-size:13px">대기중인 신청이 없습니다</div>';
         html += '</div>';
       } else {
         pendingList.forEach(function(u){
-          html += '<div style="background:#fff;border-radius:14px;padding:15px;margin-bottom:10px;border:1.5px solid #D9D3C8">';
-          html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">';
-          if(u.photo) html += '<img src="'+u.photo+'" style="width:44px;height:44px;border-radius:50%;object-fit:cover">';
-          else html += '<div style="width:44px;height:44px;border-radius:50%;background:#EDE8E0;display:flex;align-items:center;justify-content:center;font-size:20px">👤</div>';
+          html += '<div style="background:#fff;border-radius:14px;padding:14px;margin-bottom:8px;border:1.5px solid #FED7AA">';
+          html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">';
+          if(u.photo) html += '<img src="'+u.photo+'" style="width:40px;height:40px;border-radius:50%;object-fit:cover">';
+          else html += '<div style="width:40px;height:40px;border-radius:50%;background:#EDE8E0;display:flex;align-items:center;justify-content:center;font-size:18px">👤</div>';
           html += '<div><div style="font-size:15px;font-weight:800;color:#1A1814">'+escHTML(u.name||'이름없음')+'</div>';
           html += '<div style="font-size:12px;color:#6B7280">'+escHTML(u.email||'')+'</div>';
           html += '<div style="font-size:12px;color:#C96442;font-weight:700">소속: '+escHTML(u.cell||'미입력')+'</div></div></div>';
@@ -4280,6 +4283,28 @@ html += '</div>';
           html += '<button onclick="window.approveUser(\''+u.uid+'\',true)" style="flex:1;padding:10px;border-radius:10px;border:none;background:#059669;color:#fff;font-size:13px;font-weight:800;cursor:pointer">✅ 승인</button>';
           html += '<button onclick="window.approveUser(\''+u.uid+'\',false)" style="flex:1;padding:10px;border-radius:10px;border:none;background:#dc2626;color:#fff;font-size:13px;font-weight:800;cursor:pointer">❌ 거절</button>';
           html += '</div></div>';
+        });
+      }
+
+      // ── 승인완료 섹션 ──
+      html += '<div style="font-size:13px;font-weight:800;color:#059669;margin-bottom:8px;margin-top:16px;letter-spacing:0.03em">✅ 승인완료 ('+approvedList.length+')</div>';
+      if(approvedList.length === 0) {
+        html += '<div style="text-align:center;padding:20px;color:#9CA3AF;background:#F5F0E8;border-radius:14px">';
+        html += '<div style="font-size:13px">승인된 사용자가 없습니다</div>';
+        html += '</div>';
+      } else {
+        approvedList.forEach(function(u){
+          html += '<div style="background:#F0FDF4;border-radius:14px;padding:14px;margin-bottom:8px;border:1.5px solid #BBF7D0">';
+          html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">';
+          if(u.photo) html += '<img src="'+u.photo+'" style="width:40px;height:40px;border-radius:50%;object-fit:cover">';
+          else html += '<div style="width:40px;height:40px;border-radius:50%;background:#D1FAE5;display:flex;align-items:center;justify-content:center;font-size:18px">✅</div>';
+          html += '<div style="flex:1"><div style="font-size:15px;font-weight:800;color:#1A1814">'+escHTML(u.name||'이름없음')+'</div>';
+          html += '<div style="font-size:12px;color:#6B7280">'+escHTML(u.email||'')+'</div>';
+          html += '<div style="font-size:12px;color:#059669;font-weight:700">소속: '+escHTML(u.cell||'미입력')+'</div>';
+          if(u.role) html += '<div style="font-size:11px;color:#9CA3AF">역할: '+escHTML(u.role)+'</div>';
+          html += '</div></div>';
+          html += '<button onclick="window.revokeUser(\''+u.uid+'\')" style="width:100%;padding:8px;border-radius:10px;border:1.5px solid #dc2626;background:transparent;color:#dc2626;font-size:12px;font-weight:700;cursor:pointer">승인 취소</button>';
+          html += '</div>';
         });
       }
       html += '</div>';
@@ -6519,29 +6544,89 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 
   // ── 승인 관리 ──
-  window.loadPendingUsers=async function(){
-    try{
-      const q=query(collection(db,'users'),where('approved','==',false));
-      const snap=await getDocs(q);
-      window._pendingUsers=[];
-      snap.forEach(d=>window._pendingUsers.push({uid:d.id,...d.data()}));
-      window._pendingCount=window._pendingUsers.length;
-      if(typeof render==='function')render();
-    }catch(e){console.log('loadPending:',e.message);}
+  // 대기중 + 승인완료 사용자 로드
+  window.loadPendingUsers = async function() {
+    try {
+      const allSnap = await getDocs(collection(db,'users'));
+      window._pendingUsers = [];
+      window._approvedUsers = [];
+      allSnap.forEach(d => {
+        const u = {uid:d.id,...d.data()};
+        if(u.approved) window._approvedUsers.push(u);
+        else window._pendingUsers.push(u);
+      });
+      window._pendingCount = window._pendingUsers.length;
+      if(typeof render==='function') render();
+    } catch(e) { console.log('loadUsers:',e.message); }
   };
-  window.approveUser=async function(uid,approved){
-    try{
-      if(!approved){
-        if(!confirm('거절하면 삭제됩니다. 진행하시겠습니까?'))return;
+
+  // 승인 처리 + 셀원 자동 추가
+  window.approveUser = async function(uid, approved) {
+    try {
+      const userSnap = await getDocs(collection(db,'users'));
+      let userData = null;
+      userSnap.forEach(d => { if(d.id===uid) userData=d.data(); });
+
+      if(!approved) {
+        if(!confirm('거절하면 계정이 삭제됩니다. 진행하시겠습니까?')) return;
         await deleteDoc(doc(db,'users',uid));
         alert('거절 완료');
-      }else{
+      } else {
+        // 1. 사용자 승인
         await setDoc(doc(db,'users',uid),{approved:true,approvedAt:new Date().toISOString()},{merge:true});
-        alert('✅ 승인 완료!');
+        
+        // 2. 해당 셀 Firebase에 셀원 자동 추가
+        if(userData && userData.cell) {
+          const cellName = userData.cell;
+          const cellRef = doc(db,'cells',cellName);
+          const cellSnap = await getDocs(collection(db,'cells'));
+          let cellData = null;
+          cellSnap.forEach(d => { if(d.id===cellName) cellData=d.data(); });
+          
+          const existingMembers = (cellData && cellData.members) || [];
+          const alreadyExists = existingMembers.find(m => m.email===userData.email);
+          
+          if(!alreadyExists) {
+            const newMember = {
+              id: Date.now(),
+              name: userData.name || '',
+              phone: '',
+              email: userData.email || '',
+              photo: userData.photo || null,
+              emoji: '😊',
+              group: cellName,
+              grade: '',
+              fam: [],
+              kakaoId: '',
+              snsType: '',
+              snsId: '',
+              attendance: [],
+              prayers: [],
+              counseling: [],
+              education: [],
+              catSel: {cell: cellName},
+              _fromAuth: true
+            };
+            existingMembers.push(newMember);
+            await setDoc(cellRef, {members: existingMembers, lastUpdated: new Date().toISOString()}, {merge:true});
+          }
+        }
+        alert('✅ 승인 완료! ' + (userData&&userData.cell ? userData.cell+' 셀에 추가됐습니다.' : ''));
       }
       window.loadPendingUsers();
-    }catch(e){alert('오류: '+e.message);}
+    } catch(e) { alert('오류: '+e.message); }
   };
+
+  // 승인 취소
+  window.revokeUser = async function(uid) {
+    if(!confirm('승인을 취소하시겠습니까?')) return;
+    try {
+      await setDoc(doc(db,'users',uid),{approved:false,revokedAt:new Date().toISOString()},{merge:true});
+      alert('승인 취소됨');
+      window.loadPendingUsers();
+    } catch(e) { alert('오류: '+e.message); }
+  };
+
   setTimeout(()=>window.loadPendingUsers(),2000);
 </script>
 </body>
