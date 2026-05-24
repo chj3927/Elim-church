@@ -463,6 +463,8 @@ function save() {
   localStorage.setItem('elim_엘림교회_여호와라파_Members',    JSON.stringify(members));
   localStorage.setItem('elim_엘림교회_여호와라파_Schedules',  JSON.stringify(schedules));
   localStorage.setItem('elim_엘림교회_여호와라파_Meetings',   JSON.stringify(meetings));
+  // Firebase 즉시 동기화
+  if(typeof window.syncToFirebase === 'function') window.syncToFirebase();
 }
 
 // ═══════════════════════════════════
@@ -582,7 +584,7 @@ function markAtt(mid, status) {
       return {...m,attendance:att};
     });
   }
-  save(); render();
+  save(); window._keepScroll=true; render();
 }
 function addAttRec() {
   if(!newAttRec.date){ alert('날짜를 선택하세요'); return; }
@@ -596,7 +598,7 @@ function addAttRec() {
   save(); selMem=members.find(m=>m.id===selMem.id);
   const wasEditing = newAttRec.editing||false;
   newAttRec={date:today(),status:'present',reason:''};
-  mAddAtt=false; if(!wasEditing) alert('출석 기록이 추가되었습니다!'); render();
+  mAddAtt=false; if(!wasEditing) alert('출석 기록이 추가되었습니다!'); window._keepScroll=true; render();
 }
 function delAttSilent(mid, date) {
   members=members.map(m=>m.id===mid?{...m,attendance:m.attendance.filter(a=>a.date!==date)}:m);
@@ -2983,7 +2985,11 @@ html += '<div style="font-size:12px;font-weight:800;color:#1D4ED8">📋 모임 �
   }
 
   document.getElementById('app').innerHTML = html;
-  window.scrollTo({top:0,behavior:'instant'});
+  // 출석체크 중일 때는 스크롤 유지
+  if(!window._keepScroll) {
+    window.scrollTo({top:0,behavior:'instant'});
+  }
+  window._keepScroll = false;
 
 }
 
