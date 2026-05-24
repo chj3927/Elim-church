@@ -205,17 +205,17 @@ input:focus, textarea:focus, select:focus {
 
     if (userSnap.exists()) {
       const userData = userSnap.data();
-      if (userData.approved) {
+      if (userData.approved || userData.role === 'admin') {
         enterApp(userData);
-        // 실시간 승인 감지 (승인 취소 대비)
+        // 실시간 승인 감지
         onSnapshot(userRef, (snap) => {
-          if(snap.exists() && !snap.data().approved) location.reload();
+          if(snap.exists() && !snap.data().approved && snap.data().role !== 'admin') location.reload();
         });
       } else {
         showPending(name, email);
         // 실시간 승인 대기
         onSnapshot(userRef, (snap) => {
-          if(snap.exists() && snap.data().approved) enterApp(snap.data());
+          if(snap.exists() && (snap.data().approved || snap.data().role === 'admin')) enterApp(snap.data());
         });
       }
     } else {
