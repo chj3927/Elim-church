@@ -3721,6 +3721,16 @@ function getFiltered() {
     // 분류/그룹 필터
     if(cSel==='cell'){
       if(m.group===BEST_GROUP) return false;
+      // 다른 분류(edu, deacon 등)에 속한 셀은 셀그룹 탭에서 제외
+      if(m._sourceCell) {
+        // 모든 비-cell 분류 확인
+        for(const catId in catGroups) {
+          if(catId === 'cell') continue;
+          if((catGroups[catId]||[]).includes(m._sourceCell)) {
+            return false; // 다른 분류에 속하면 셀그룹 탭에서 숨김
+          }
+        }
+      }
       if(selGrp==='all') return true;
       if(m._sourceCell) return m._sourceCell===selGrp;
       return m.group===selGrp;
