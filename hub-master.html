@@ -3731,6 +3731,8 @@ function getFiltered() {
     if(cSel==='cell'){
       if(m.group===BEST_GROUP) return false;
       if(selGrp==='all') return true;
+      // 허브: _sourceCell로 셀 구분, 일반 앱: group으로 구분
+      if(m._sourceCell) return m._sourceCell===selGrp;
       return m.group===selGrp;
     }
 
