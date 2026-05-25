@@ -3111,10 +3111,12 @@ html += '<div style="font-size:12px;font-weight:800;color:#1D4ED8">📋 모임 �
 </script>
 
 
+
 <script type="module">
   import {initializeApp, getApps} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import {getFirestore, doc, setDoc, onSnapshot, getDoc} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-  
+  import {getFirestore, doc, setDoc, onSnapshot} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import {getAuth} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
   const _fc = {
     apiKey:"AIzaSyDBmyfa8prUExn3IAA0vaPv844K8oZfvmE",
     authDomain:"elim-church-2072d.firebaseapp.com",
@@ -3123,10 +3125,14 @@ html += '<div style="font-size:12px;font-weight:800;color:#1D4ED8">📋 모임 �
     messagingSenderId:"345257256943",
     appId:"1:345257256943:web:27ebb7bbf67f15eadaf81a"
   };
-  const _fa = getApps().find(a=>a.name==='cheongyeon') || initializeApp(_fc, 'cheongyeon');
-  const _fd = getFirestore(_fa);
-  const _fr = doc(_fd, 'cells', '청년대학');
   
+  // 인증 앱과 동일한 인스턴스 사용 (auth 공유)
+  const _appName = 'cell_cheongyeon';
+  const _fa = getApps().find(a=>a.name===_appName) || initializeApp(_fc, _appName);
+  const _fd = getFirestore(_fa);
+  const _auth = getAuth(_fa);
+  const _fr = doc(_fd, 'cells', '청년대학');
+
   // Firebase → 로컬 동기화
   onSnapshot(_fr, (snap) => {
     if(!snap.exists()) return;
@@ -3138,35 +3144,39 @@ html += '<div style="font-size:12px;font-weight:800;color:#1D4ED8">📋 모임 �
     if(typeof render==='function') render();
   });
 
-  // syncToFirebase 전역 등록
+  // 저장 함수 - 인증 확인 후 저장
   window.syncToFirebase = async function() {
+    const user = _auth.currentUser || window._firebaseUser;
+    if(!user) {
+      console.log('⚠️ 비로그인 상태 - 로컬만 저장');
+      return;
+    }
     try {
-      const data = {
+      await setDoc(_fr, {
         members:   typeof members   !== 'undefined' ? members   : [],
         groups:    typeof groups    !== 'undefined' ? groups    : [],
         schedules: typeof schedules !== 'undefined' ? schedules : [],
         meetings:  typeof meetings  !== 'undefined' ? meetings  : [],
         lastUpdated: new Date().toISOString(),
-        cellName: '청년대학'
-      };
-      await setDoc(_fr, data);
-      console.log('✅ Firebase 저장:', '청년대학', data.members.length, '명');
+        updatedBy: user.email
+      });
+      console.log('✅ Firebase 저장:', '청년대학');
     } catch(e) {
       console.error('❌ Firebase 실패:', e.message);
     }
   };
 
-  // 앱 로드 후 즉시 동기화 테스트
-  window.addEventListener('load', () => {
-    console.log('🔥 Firebase 준비완료:', '청년대학');
-    // 3초 후 현재 데이터 강제 업로드
-    setTimeout(() => {
-      if(typeof members !== 'undefined' && members.length > 0) {
-        window.syncToFirebase();
-      }
-    }, 3000);
+  // Auth 상태 감지 → 로그인되면 즉시 동기화
+  _auth.onAuthStateChanged((user) => {
+    if(user) {
+      window._firebaseUser = user;
+      console.log('🔐 인증 확인:', user.email);
+      // 로그인 확인 후 현재 데이터 업로드
+      setTimeout(() => window.syncToFirebase(), 1000);
+    }
   });
 </script>
+
 
 </body>
 </html>
