@@ -6480,30 +6480,38 @@ document.addEventListener('DOMContentLoaded', ()=>{
       const merged=[];
       snap.forEach(ds=>{
         const d=ds.data(),cell=ds.id;
-        if(d.members)localStorage.setItem('elim_엘림교회_'+cell+'_Members',JSON.stringify(d.members));
+        // Firebase 데이터를 직접 사용 (캐시 문제 방지)
+        const mems = (d.members && Array.isArray(d.members)) ? d.members : [];
+        localStorage.setItem('elim_엘림교회_'+cell+'_Members',JSON.stringify(mems));
         if(d.groups) localStorage.setItem('elim_엘림교회_'+cell+'_Groups', JSON.stringify(d.groups));
         if(d.schedules)localStorage.setItem('elim_엘림교회_'+cell+'_Schedules',JSON.stringify(d.schedules));
         if(d.meetings) localStorage.setItem('elim_엘림교회_'+cell+'_Meetings', JSON.stringify(d.meetings));
-        const mems=JSON.parse(localStorage.getItem('elim_엘림교회_'+cell+'_Members')||'[]');
         mems.forEach(m=>merged.push(Object.assign({},m,{_sourceCell:cell})));
         if(!groups.includes(cell))groups.push(cell);
       });
-      if(merged.length>0){members=merged;localStorage.setItem('elim_엘림교회_엘림교회_Members',JSON.stringify(members));if(typeof render==='function')render();}
+      members=merged;
+      localStorage.setItem('elim_엘림교회_엘림교회_Members',JSON.stringify(members));
+      console.log('✅ 허브 로드:', merged.length, '명');
+      if(typeof render==='function')render();
     }catch(e){console.log('loadCells:',e.message);}
   }
   onSnapshot(collection(_db,'cells'),snap=>{
     const merged=[];
     snap.forEach(ds=>{
       const d=ds.data(),cell=ds.id;
-      if(d.members)localStorage.setItem('elim_엘림교회_'+cell+'_Members',JSON.stringify(d.members));
+      // Firebase 데이터 직접 사용 (캐시 문제 방지)
+      const mems = (d.members && Array.isArray(d.members)) ? d.members : [];
+      localStorage.setItem('elim_엘림교회_'+cell+'_Members',JSON.stringify(mems));
       if(d.groups) localStorage.setItem('elim_엘림교회_'+cell+'_Groups', JSON.stringify(d.groups));
       if(d.schedules)localStorage.setItem('elim_엘림교회_'+cell+'_Schedules',JSON.stringify(d.schedules));
       if(d.meetings) localStorage.setItem('elim_엘림교회_'+cell+'_Meetings', JSON.stringify(d.meetings));
-      const mems=JSON.parse(localStorage.getItem('elim_엘림교회_'+cell+'_Members')||'[]');
       mems.forEach(m=>merged.push(Object.assign({},m,{_sourceCell:cell})));
       if(!groups.includes(cell))groups.push(cell);
     });
-    if(merged.length>0){members=merged;localStorage.setItem('elim_엘림교회_엘림교회_Members',JSON.stringify(members));if(typeof render==='function')render();}
+    members=merged;
+    localStorage.setItem('elim_엘림교회_엘림교회_Members',JSON.stringify(members));
+    console.log('🔄 허브 실시간 업데이트:', merged.length, '명');
+    if(typeof render==='function')render();
   });
   window.loadPendingUsers=async function(){
     try{
