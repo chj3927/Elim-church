@@ -6547,7 +6547,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
         const cell = m._sourceCell;
         if(!cell) return;
         if(!byCell[cell]) byCell[cell] = [];
-        // _sourceCell 제거 후 저장
         const clean = Object.assign({}, m);
         delete clean._sourceCell;
         byCell[cell].push(clean);
@@ -6561,6 +6560,19 @@ document.addEventListener('DOMContentLoaded', ()=>{
         }, {merge: true});
         console.log('✅ 허브 → Firebase:', cell, byCell[cell].length, '명');
       }
+      
+      // 허브 자체 데이터(엘림교회 문서)도 업데이트
+      await setDoc(doc(_db,'cells','엘림교회'), {
+        cellName: '엘림교회',
+        groups: groups || [],
+        schedules: schedules || [],
+        meetings: meetings || [],
+        categories: categories || [],
+        catGroups: catGroups || {},
+        lastUpdated: new Date().toISOString(),
+        updatedBy: 'hub_admin'
+      }, {merge: true});
+      console.log('✅ 허브 → Firebase: 엘림교회 (전체 설정)');
     }catch(e){console.error('❌ 허브 저장 실패:', e.message);}
   };
   
