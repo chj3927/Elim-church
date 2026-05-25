@@ -3127,9 +3127,32 @@ html += '<div style="font-size:12px;font-weight:800;color:#1D4ED8">📋 모임 �
     if(typeof render==='function')render();
   });
   window.syncToFirebase=async function(){
-    try{await setDoc(_fr,{members:members||[],groups:groups||[],schedules:schedules||[],meetings:meetings||[],lastUpdated:new Date().toISOString()});}catch(e){console.log('sync fail',e.message);}
+    try{
+      await setDoc(_fr,{
+        members:window._members||members||[],
+        groups:window._groups||groups||[],
+        schedules:window._schedules||schedules||[],
+        meetings:window._meetings||meetings||[],
+        lastUpdated:new Date().toISOString()
+      });
+      console.log('✅ Firebase 저장 완료: 여호와이레');
+    }catch(e){console.log('sync fail',e.message);}
   };
-  window.addEventListener('load',function(){const _o=window.save;window.save=function(){if(typeof _o==='function')_o();window.syncToFirebase();};});
+  
+  // save 함수 즉시 오버라이드 (load 이벤트 대기 없이)
+  const _origSave = window.save;
+  window.save = function() {
+    if(typeof _origSave === 'function') _origSave();
+    window.syncToFirebase();
+  };
+  
+  // 전역 변수 동기화
+  setInterval(function() {
+    window._members = typeof members !== 'undefined' ? members : [];
+    window._groups = typeof groups !== 'undefined' ? groups : [];
+    window._schedules = typeof schedules !== 'undefined' ? schedules : [];
+    window._meetings = typeof meetings !== 'undefined' ? meetings : [];
+  }, 1000);
 </script>
 </body>
 </html>

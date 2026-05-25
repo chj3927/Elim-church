@@ -648,7 +648,7 @@ groups.splice(1, 0, BEST_GROUP);
 groups = groups.filter((g, i) => groups.indexOf(g) === i);
 
 // ── 기본 셀그룹 자동 추가 (없을 경우) ──
-const DEFAULT_CELL_GROUPS = ['여호와라파','예수사랑','여호와이레','여호와샬롬','한마음','감사','밀알','청년부'];
+const DEFAULT_CELL_GROUPS = ['여호와라파','예수사랑','여호와이레','여호와샬롬','한마음','감사','밀알'];
 DEFAULT_CELL_GROUPS.forEach(g => {
   if(!groups.includes(g)) groups.push(g);
 });
@@ -6479,7 +6479,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const _fc={apiKey:"AIzaSyDBmyfa8prUExn3IAA0vaPv844K8oZfvmE",authDomain:"elim-church-2072d.firebaseapp.com",projectId:"elim-church-2072d",storageBucket:"elim-church-2072d.firebasestorage.app",messagingSenderId:"345257256943",appId:"1:345257256943:web:27ebb7bbf67f15eadaf81a"};
   const _app2=getApps().find(a=>a.name==='hub-data')||initializeApp(_fc,'hub-data');
   const _db2=getFirestore(_app2);
-  const ALL_CELLS=['여호와샬롬','예수사랑','여호와라파','한마음','밀알','감사','여호와이레','유초등부','중고등부','청년대학','새소식반'];
+  const ALL_CELLS=['여호와샬롬','예수사랑','여호와라파','한마음','밀알','감사','여호와이레','유초등부','중고등부','청년대학','새소식반','청년부'];
   onSnapshot(collection(_db2,'cells'),(snapshot)=>{
     snapshot.forEach((docSnap)=>{
       const data=docSnap.data(),cell=docSnap.id;
@@ -6602,7 +6602,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
           if(data.meetings)  localStorage.setItem('elim_엘림교회_'+cell+'_Meetings',  JSON.stringify(data.meetings));
         });
         // 모든 셀 멤버 통합
-        const ALL = ['여호와샬롬','예수사랑','여호와라파','한마음','밀알','감사','여호와이레','유초등부','중고등부','청년대학','새소식반'];
+        const ALL = ['여호와샬롬','예수사랑','여호와라파','한마음','밀알','감사','여호와이레','유초등부','중고등부','청년대학','새소식반','청년부'];
         const merged = [];
         ALL.forEach(cell => {
           const mems = JSON.parse(localStorage.getItem('elim_엘림교회_'+cell+'_Members')||'[]');
