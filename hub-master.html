@@ -6265,10 +6265,15 @@ html += '<div style="display:flex;justify-content:center;padding:12px 0 4px"><bu
     '</div></div></div>';
   }
 
+  const _sy = window.scrollY;
   document.getElementById('app').innerHTML = html;
   // (v9j) 렌더 직후 미리보기 동기화
   try{ _afterMsgChange(); }catch(e){}
-  window.scrollTo({top:0,behavior:'instant'});
+  if(typeof mAttendance !== 'undefined' && mAttendance) {
+    window.scrollTo({top: _sy, behavior:'instant'});
+  } else {
+    window.scrollTo({top:0,behavior:'instant'});
+  }
 
 }
 
