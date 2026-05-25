@@ -3145,37 +3145,44 @@ html += '<div style="font-size:12px;font-weight:800;color:#1D4ED8">📋 모임 �
     });
   }
 
-  // 저장 함수 - 인증 확인 후 저장
+  // 저장 함수 - 어떤 상태에서도 시도
   window.syncToFirebase = async function() {
-    const user = _auth.currentUser || window._firebaseUser;
-    if(!user) {
-      console.log('⚠️ 비로그인 상태 - 로컬만 저장');
-      return;
-    }
     try {
-      await setDoc(_fr, {
+      // 인증 상태 강제 갱신
+      await _auth.authStateReady && await _auth.authStateReady();
+      const user = _auth.currentUser || window._firebaseUser || (window.firebaseAuth && window.firebaseAuth.currentUser);
+      
+      const data = {
         members:   typeof members   !== 'undefined' ? members   : [],
         groups:    typeof groups    !== 'undefined' ? groups    : [],
         schedules: typeof schedules !== 'undefined' ? schedules : [],
         meetings:  typeof meetings  !== 'undefined' ? meetings  : [],
         lastUpdated: new Date().toISOString(),
-        updatedBy: user.email
-      });
-      console.log('✅ Firebase 저장:', '여호와라파');
+        cellName: '여호와라파',
+        updatedBy: user ? user.email : 'unknown'
+      };
+      
+      await setDoc(_fr, data);
+      console.log('✅ Firebase 저장:', '여호와라파', '셀원:', data.members.length);
     } catch(e) {
-      console.error('❌ Firebase 실패:', e.message);
+      console.error('❌ Firebase 실패:', '여호와라파', e.code, e.message);
     }
   };
 
-  // Auth 상태 감지 → 로그인되면 즉시 동기화 시작
+  // Auth 상태 감지
   _auth.onAuthStateChanged((user) => {
     if(user) {
       window._firebaseUser = user;
       console.log('🔐 인증 확인:', user.email);
       _startSync();
-      setTimeout(() => window.syncToFirebase(), 1500);
     }
   });
+  
+  // 페이지 로드 5초 후 - 로그인 상태 무시하고 sync 시도
+  setTimeout(() => {
+    console.log('🔄 강제 동기화 시도');
+    window.syncToFirebase();
+  }, 5000);
 </script>
 
 
