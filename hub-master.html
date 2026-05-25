@@ -150,39 +150,51 @@ header{z-index:9999; pointer-events:auto; transform:translateZ(0);}
 .hdr-btn{pointer-events:auto;}
 
 </style>
+
 <script>
-const _proto=window.location.protocol,_host=window.location.hostname;
-const _isLocal=_proto==='file:'||_proto==='content:'||_host==='localhost';
-if(_isLocal){
-  window.googleLogin=function(){const o=document.getElementById('auth-overlay');if(o)o.classList.add('hidden');if(typeof render==='function')render();};
-  document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){const o=document.getElementById('auth-overlay');if(o)o.classList.add('hidden');if(typeof render==='function')render();},500);});
+// 로컬/개발 환경에서 바로 진입
+const _proto = window.location.protocol;
+const _host = window.location.hostname;
+const _isLocal = _proto === 'file:' || _proto === 'content:' || _host === 'localhost' || _host === '127.0.0.1';
+if(_isLocal) {
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+      const overlay = document.getElementById('auth-overlay');
+      if(overlay) overlay.classList.add('hidden');
+      if(typeof render === 'function') render();
+    }, 300);
+  });
 }
 </script>
+</head>
+<body>
+
 <style>
 #auth-overlay{position:fixed;inset:0;z-index:99999;background:linear-gradient(160deg,#C96442,#7D3A24);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
 #auth-overlay.hidden{display:none;}
 .auth-logo{width:64px;height:64px;margin-bottom:14px;border-radius:14px;object-fit:contain;}
-.auth-title{font-size:20px;font-weight:900;color:#fff;margin-bottom:4px;}
+.auth-title{font-size:20px;font-weight:900;color:#fff;margin-bottom:4px;letter-spacing:-0.02em;}
 .auth-sub{font-size:13px;color:rgba(255,255,255,.75);margin-bottom:28px;text-align:center;line-height:1.7;}
 .auth-card{background:#fff;border-radius:20px;padding:24px;width:100%;max-width:320px;text-align:center;}
 .auth-card h3{font-size:15px;font-weight:800;color:#1A1814;margin-bottom:6px;}
 .auth-card p{font-size:13px;color:#6B7280;margin-bottom:20px;line-height:1.6;}
 .google-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:12px;border:1.5px solid #D9D3C8;border-radius:10px;background:#fff;font-size:14px;font-weight:700;color:#1A1814;cursor:pointer;}
 .google-btn img{width:20px;height:20px;}
+.auth-pending{background:#FEF3C7;border-radius:12px;padding:18px;text-align:center;}
 .auth-input{padding:10px 14px;border:1.5px solid #D9D3C8;border-radius:10px;font-size:14px;outline:none;width:100%;box-sizing:border-box;margin-bottom:8px;}
 .auth-btn{padding:12px;border-radius:10px;border:none;background:#C96442;color:#fff;font-size:14px;font-weight:800;cursor:pointer;width:100%;}
 .auth-signout{margin-top:10px;font-size:12px;color:#9CA3AF;cursor:pointer;text-decoration:underline;display:block;}
 </style>
-</head>
-<body>
 <div id="auth-overlay">
   <img class="auth-logo" src="data:image/png;base64,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b3Rpb25WaWRlb011dGUiOmZhbHNlLCJpc1RyaW1Nb3Rpb25WaWRlbyI6ZmFsc2UsImNsaXBJbmZvVmFsdWUiOiJ7XCJtQ2VudGVyWFwiOjAuMTIzMzk3ODI3MTQ4NDM3NSxcIm1DZW50ZXJZXCI6MC40ODcwNDkyNTE3OTQ4MTUwNixcIm1XaWR0aFwiOjAuMTgxNTY3ODMyODI3NTY4MDUsXCJtSGVpZ2h0XCI6MC43NjI2NTg4OTQwNjIwNDIyLFwibVJvdGF0aW9uXCI6MCxcIm1Sb3RhdGVcIjowLFwibUhGbGlwXCI6MCxcIm1WRmxpcFwiOjAsXCJtUm90YXRpb25FZmZlY3RcIjowLFwibVJvdGF0ZUVmZmVjdFwiOjAsXCJtSEZsaXBFZmZlY3RcIjowLFwibVZGbGlwRWZmZWN0XCI6MCxcIm1Ib3pQZXJzcGVjdGl2ZVwiOjAsXCJtVmVyUGVyc3BlY3RpdmVcIjowfSIsInRvbmVWYWx1ZSI6IntcImJyaWdodG5lc3NcIjoxMDAsXCJleHBvc3VyZVwiOjEwMCxcImNvbnRyYXN0XCI6MTAwLFwic2F0dXJhdGlvblwiOjEwMCxcImh1ZVwiOjEwMCxcIndiTW9kZVwiOi0xLFwid2JUZW1wZXJhdHVyZVwiOjEwMCxcInRpbnRcIjoxMDAsXCJzaGFkb3dcIjoxMDAsXCJoaWdobGlnaHRcIjoxMDAsXCJsaWdodGJhbGFuY2VcIjoxMDAsXCJzaGFycG5lc3NcIjoxMDAsXCJkZWZpbml0aW9uXCI6MTAwLFwiaXNCcmlnaHRuZXNzSVBFXCI6ZmFsc2UsXCJpc0V4cG9zdXJlSVBFXCI6ZmFsc2UsXCJpc0NvbnRyYXN0SVBFXCI6ZmFsc2UsXCJpc1NhdHVyYXRpb25JUEVcIjpmYWxzZX0iLCJlZmZlY3RWYWx1ZSI6IntcImZpbHRlckluZGljYXRpb25cIjo0MDk3LFwiYWxwaGFWYWx1ZVwiOjEwMCxcImZpbHRlclR5cGVcIjowfSIsInBvcnRyYWl0RWZmZWN0VmFsdWUiOiJ7XCJlZmZlY3RJZFwiOi0xLFwiZWZmZWN0TGV2ZWxcIjotMSxcImV4aWZSb3RhdGlvblwiOjAsXCJsaWdodExldmVsXCI6MCxcInRvdWNoWFwiOjAsXCJ0b3VjaFlcIjowLFwicmVmb2N1c1hcIjotMSxcInJlZm9jdXNZXCI6LTEsXCJlZmZlY3RJZE9yaWdpbmFsXCI6LTEsXCJlZmZlY3RMZXZlbE9yaWdpbmFsXCI6LTEsXCJsaWdodExldmVsT3JpZ2luYWxcIjotMSxcInRvdWNoWE9yaWdpbmFsXCI6MCxcInRvdWNoWU9yaWdpbmFsXCI6MCxcInJlZm9jdXNYT3JpZ2luYWxcIjotMSxcInJlZm9jdXNZT3JpZ2luYWxcIjotMSxcIndhdGVyTWFya1JlbW92ZWRcIjpmYWxzZSxcIndhdGVyTWFya1JlbW92ZWRPcmlnaW5hbFwiOmZhbHNlfSIsImlzQmxlbmRpbmciOnRydWUsImlzTm90UmVFZGl0IjpmYWxzZSwic2VwVmVyc2lvbiI6IjE3MDAwMCIsIm5kZVZlcnNpb24iOjEsInJlU2l6ZSI6NCwiaXNTY2FsZUFJIjpmYWxzZSwicm90YXRpb24iOjEsImFkanVzdG1lbnRWYWx1ZSI6IntcIm1Dcm9wU3RhdGVcIjoxMzEwNzZ9IiwiaXNBcHBseVNoYXBlQ29ycmVjdGlvbiI6ZmFsc2UsImlzTmV3UmVFZGl0T25seSI6ZmFsc2UsImlzRGVjb1JlRWRpdE9ubHkiOmZhbHNlLCJpc0FJRmlsdGVyUmVFZGl0T25seSI6ZmFsc2V9AAChCxYAAABPcmlnaW5hbF9QYXRoX0hhc2hfS2V5NGUyYjlkOWYyYTAyYmU5MDM2ODMwM2ZiYWI0ZTBhNTMxMjYzMDdlODUwNDc0ZDRhZDRhZjIzMzFiMWI1YmU0NC8xMTE2MVNFRkhrAAAAAgAAAAAAoQvxBgAAjQYAAAAAoQtkAAAAZAAAACQAAABTRUZU" onerror="this.style.display='none'">
   <div class="auth-title">엘림교회</div>
   <div class="auth-sub">셀 패밀리 관리 시스템<br>구글 계정으로 로그인하세요</div>
   <div class="auth-card" id="auth-card">
-    <h3>로그인</h3><p>담당자 승인 후 사용 가능합니다</p>
+    <h3>로그인</h3>
+    <p>담당자 승인 후 사용 가능합니다</p>
     <button class="google-btn" onclick="window.googleLogin()">
-      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg">Google로 로그인
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg">
+      Google로 로그인
     </button>
   </div>
 </div>
@@ -635,8 +647,11 @@ groups.splice(1, 0, BEST_GROUP);
 // 전체 groups 중복 제거 (순서 유지)
 groups = groups.filter((g, i) => groups.indexOf(g) === i);
 
-// ── 기본 셀그룹 자동 추가 (없을 경우) ──
-const DEFAULT_CELL_GROUPS = ['여호와라파','예수사랑','여호와이레','여호와샬롬','한마음','감사','밀알','청년부'];
+// ── 기본 셀그룹 (Firebase에 없어도 기본 표시) ──
+const DEFAULT_CELL_GROUPS = [
+  '여호와샬롬','예수사랑','여호와라파','한마음','밀알','감사','여호와이레',
+  '새소식반','유초등부','중고등부','청년대학'
+];
 DEFAULT_CELL_GROUPS.forEach(g => {
   if(!groups.includes(g)) groups.push(g);
 });
@@ -1058,7 +1073,10 @@ function addGroup() {
   if(!n) return;
   if(groups.includes(n)){ alert('이미 존재하는 그룹입니다'); return; }
   groups.push(n); save(); render();
-  if(typeof window.createCellInFirebase==='function') window.createCellInFirebase(n);
+  // Firebase cells 컬렉션에 새 셀 문서 생성
+  if(typeof window.createCellInFirebase === 'function') {
+    window.createCellInFirebase(n);
+  }
 }
 function openRename(g){ renaming=g; renameVal=g; mRename=true; render(); }
 function confirmRename() {
@@ -1074,10 +1092,13 @@ function confirmRename() {
   save(); mRename=false; renaming=''; renameVal=''; alert('변경되었습니다!'); render();
 }
 function delGroup(g) {
-  if(!confirm('"'+g+'" 그룹을 삭제하시겠습니까?')) return;
+  if(!confirm('"'+g+'" 그룹을 삭제하시겠습니까?\n\nFirebase에서도 삭제됩니다.')) return;
   groups=groups.filter(x=>x!==g); save();
   if(selGrp===g) selGrp='all'; render();
-  if(typeof window.deleteCellInFirebase==='function') window.deleteCellInFirebase(g);
+  // Firebase cells 컬렉션에서 삭제
+  if(typeof window.deleteCellInFirebase === 'function') {
+    window.deleteCellInFirebase(g);
+  }
 }
 function changeGrp(mid, g) {
   members=members.map(m=>m.id===mid?{...m,group:g}:m); save();
@@ -3721,15 +3742,18 @@ function getFiltered() {
     if(cSel==='cell'){
       if(m.group===BEST_GROUP) return false;
       if(selGrp==='all') return true;
+      // 허브: _sourceCell로 셀 구분, 일반 앱: group으로 구분
       if(m._sourceCell) return m._sourceCell===selGrp;
       return m.group===selGrp;
     }
-    // 분류 탭: _sourceCell 기반
-    if(m._sourceCell){
-      const cin=catGroups[cSel]||[];
-      if(!cin.length) return true;
-      if(!pick||pick==='all') return cin.includes(m._sourceCell);
-      return cin.includes(m._sourceCell)&&m._sourceCell===pick;
+
+    // 허브: _sourceCell 기반으로 분류 필터링
+    // catGroups[cSel]에 해당 셀이 포함되면 표시
+    if(m._sourceCell) {
+      const cellsInCat = catGroups[cSel] || [];
+      if(cellsInCat.length === 0) return true; // 분류에 셀 미지정이면 전체
+      if(!pick || pick === 'all') return cellsInCat.includes(m._sourceCell);
+      return cellsInCat.includes(m._sourceCell) && (pick === 'all' || m._sourceCell === pick);
     }
 
     const cs=(m.catSel||{});
@@ -4271,6 +4295,58 @@ html += '</div>';
 
 
   if(view==='list') {
+    // ── 승인 관리 탭 ──
+    if(homeTab==='approval') {
+      const pendingList = window._pendingUsers || [];
+      const approvedList = window._approvedUsers || [];
+      html += '<div style="margin-top:12px">';
+
+      // ── 대기중 섹션 ──
+      html += '<div style="font-size:13px;font-weight:800;color:#C96442;margin-bottom:8px;letter-spacing:0.03em">⏳ 승인 대기 ('+pendingList.length+')</div>';
+      if(pendingList.length === 0) {
+        html += '<div style="text-align:center;padding:24px;color:#9CA3AF;background:#F5F0E8;border-radius:14px;margin-bottom:16px">';
+        html += '<div style="font-size:28px;margin-bottom:6px">✅</div>';
+        html += '<div style="font-size:13px">대기중인 신청이 없습니다</div>';
+        html += '</div>';
+      } else {
+        pendingList.forEach(function(u){
+          html += '<div style="background:#fff;border-radius:14px;padding:14px;margin-bottom:8px;border:1.5px solid #FED7AA">';
+          html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">';
+          if(u.photo) html += '<img src="'+u.photo+'" style="width:40px;height:40px;border-radius:50%;object-fit:cover">';
+          else html += '<div style="width:40px;height:40px;border-radius:50%;background:#EDE8E0;display:flex;align-items:center;justify-content:center;font-size:18px">👤</div>';
+          html += '<div><div style="font-size:15px;font-weight:800;color:#1A1814">'+escHTML(u.name||'이름없음')+'</div>';
+          html += '<div style="font-size:12px;color:#6B7280">'+escHTML(u.email||'')+'</div>';
+          html += '<div style="font-size:12px;color:#C96442;font-weight:700">소속: '+escHTML(u.cell||'미입력')+'</div></div></div>';
+          html += '<div style="display:flex;gap:8px">';
+          html += '<button onclick="window.approveUser(\''+u.uid+'\',true)" style="flex:1;padding:10px;border-radius:10px;border:none;background:#059669;color:#fff;font-size:13px;font-weight:800;cursor:pointer">✅ 승인</button>';
+          html += '<button onclick="window.approveUser(\''+u.uid+'\',false)" style="flex:1;padding:10px;border-radius:10px;border:none;background:#dc2626;color:#fff;font-size:13px;font-weight:800;cursor:pointer">❌ 거절</button>';
+          html += '</div></div>';
+        });
+      }
+
+      // ── 승인완료 섹션 ──
+      html += '<div style="font-size:13px;font-weight:800;color:#059669;margin-bottom:8px;margin-top:16px;letter-spacing:0.03em">✅ 승인완료 ('+approvedList.length+')</div>';
+      if(approvedList.length === 0) {
+        html += '<div style="text-align:center;padding:20px;color:#9CA3AF;background:#F5F0E8;border-radius:14px">';
+        html += '<div style="font-size:13px">승인된 사용자가 없습니다</div>';
+        html += '</div>';
+      } else {
+        approvedList.forEach(function(u){
+          html += '<div style="background:#F0FDF4;border-radius:14px;padding:14px;margin-bottom:8px;border:1.5px solid #BBF7D0">';
+          html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">';
+          if(u.photo) html += '<img src="'+u.photo+'" style="width:40px;height:40px;border-radius:50%;object-fit:cover">';
+          else html += '<div style="width:40px;height:40px;border-radius:50%;background:#D1FAE5;display:flex;align-items:center;justify-content:center;font-size:18px">✅</div>';
+          html += '<div style="flex:1"><div style="font-size:15px;font-weight:800;color:#1A1814">'+escHTML(u.name||'이름없음')+'</div>';
+          html += '<div style="font-size:12px;color:#6B7280">'+escHTML(u.email||'')+'</div>';
+          html += '<div style="font-size:12px;color:#059669;font-weight:700">소속: '+escHTML(u.cell||'미입력')+'</div>';
+          if(u.role) html += '<div style="font-size:11px;color:#9CA3AF">역할: '+escHTML(u.role)+'</div>';
+          html += '</div></div>';
+          html += '<button onclick="window.revokeUser(\''+u.uid+'\')" style="width:100%;padding:8px;border-radius:10px;border:1.5px solid #dc2626;background:transparent;color:#dc2626;font-size:12px;font-weight:700;cursor:pointer">승인 취소</button>';
+          html += '</div>';
+        });
+      }
+      html += '</div>';
+    } else {
     // ── 일정 탭 ──
     if(homeTab==='schedule') {
       var _sfLabels={worship:{c:'#7C3AED',l:'예배'},qt:{c:'#059669',l:'QT'},sermon:{c:'#D97706',l:'설교'},general:{c:'#6B7280',l:'일반'}};
@@ -4490,37 +4566,6 @@ html += '</div>';
     }
     html += '</div>'; // memberList
     } // end homeTab==='members'
-
-    // ── 승인 탭 ──
-    if(homeTab==='approval') {
-      const pL=window._pendingUsers||[],aL=window._approvedUsers||[];
-      html += '<div style="margin-top:12px">';
-      html += '<div style="font-size:13px;font-weight:800;color:#C96442;margin-bottom:8px">⏳ 승인 대기 ('+pL.length+')</div>';
-      if(!pL.length){
-        html += '<div style="text-align:center;padding:20px;color:#9CA3AF;background:#F5F0E8;border-radius:14px;margin-bottom:12px"><div style="font-size:28px">✅</div><div>대기중인 신청이 없습니다</div></div>';
-      }else{
-        pL.forEach(function(u){
-          html += '<div style="background:#fff;border-radius:14px;padding:14px;margin-bottom:8px;border:1.5px solid #FED7AA">';
-          html += '<div style="display:flex;gap:10px;align-items:center;margin-bottom:10px">';
-          html += (u.photo?'<img src="'+u.photo+'" style="width:40px;height:40px;border-radius:50%;object-fit:cover">':'<div style="width:40px;height:40px;border-radius:50%;background:#EDE8E0;display:flex;align-items:center;justify-content:center">👤</div>');
-          html += '<div><div style="font-size:15px;font-weight:800">'+escHTML(u.name||'')+'</div><div style="font-size:12px;color:#6B7280">'+escHTML(u.email||'')+'</div><div style="font-size:12px;color:#C96442;font-weight:700">소속: '+escHTML(u.cell||'미입력')+'</div></div></div>';
-          html += '<div style="display:flex;gap:8px"><button onclick="window.approveUser(\''+u.uid+'\',true)" style="flex:1;padding:10px;border-radius:10px;border:none;background:#059669;color:#fff;font-size:13px;font-weight:800;cursor:pointer">✅ 승인</button><button onclick="window.approveUser(\''+u.uid+'\',false)" style="flex:1;padding:10px;border-radius:10px;border:none;background:#dc2626;color:#fff;font-size:13px;font-weight:800;cursor:pointer">❌ 거절</button></div></div>';
-        });
-      }
-      html += '<div style="font-size:13px;font-weight:800;color:#059669;margin:12px 0 8px">✅ 승인완료 ('+aL.length+')</div>';
-      if(!aL.length){
-        html += '<div style="text-align:center;padding:20px;color:#9CA3AF;background:#F5F0E8;border-radius:14px">승인된 사용자 없음</div>';
-      }else{
-        aL.forEach(function(u){
-          html += '<div style="background:#F0FDF4;border-radius:14px;padding:14px;margin-bottom:8px;border:1.5px solid #BBF7D0">';
-          html += '<div style="display:flex;gap:10px;align-items:center;margin-bottom:10px">';
-          html += (u.photo?'<img src="'+u.photo+'" style="width:40px;height:40px;border-radius:50%;object-fit:cover">':'<div style="width:40px;height:40px;border-radius:50%;background:#D1FAE5;display:flex;align-items:center;justify-content:center">✅</div>');
-          html += '<div><div style="font-size:15px;font-weight:800">'+escHTML(u.name||'')+'</div><div style="font-size:12px;color:#6B7280">'+escHTML(u.email||'')+'</div><div style="font-size:12px;color:#059669;font-weight:700">소속: '+escHTML(u.cell||'')+'</div></div></div>';
-          html += '<button onclick="window.revokeUser(\''+u.uid+'\')" style="width:100%;padding:8px;border-radius:10px;border:1.5px solid #dc2626;background:transparent;color:#dc2626;font-size:12px;font-weight:700;cursor:pointer">승인 취소</button></div>';
-        });
-      }
-      html += '</div>';
-    }
   }
 
   if(view==='detail' && selMem) {
@@ -6292,6 +6337,7 @@ html += '<div style="display:flex;justify-content:center;padding:12px 0 4px"><bu
   try{ _afterMsgChange(); }catch(e){}
   window.scrollTo({top:0,behavior:'instant'});
 
+  } // end else (not approval)
 }
 
 // ═══════════════════════════════════
@@ -6448,115 +6494,286 @@ document.addEventListener('DOMContentLoaded', ()=>{
 });
 </script>
 
-<!-- Firebase Hub -->
+<!-- Firebase 허브 데이터 통합 -->
 <script type="module">
-  import {initializeApp,getApps} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import {getAuth,signInWithPopup,GoogleAuthProvider,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-  import {getFirestore,doc,setDoc,getDoc,onSnapshot,collection,getDocs,deleteDoc} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import {initializeApp, getApps} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import {getFirestore, collection, doc, setDoc, onSnapshot, getDocs} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
   const _fc={apiKey:"AIzaSyDBmyfa8prUExn3IAA0vaPv844K8oZfvmE",authDomain:"elim-church-2072d.firebaseapp.com",projectId:"elim-church-2072d",storageBucket:"elim-church-2072d.firebasestorage.app",messagingSenderId:"345257256943",appId:"1:345257256943:web:27ebb7bbf67f15eadaf81a"};
-  const _app=getApps().find(a=>a.name==='hub')||initializeApp(_fc,'hub');
-  const _auth=getAuth(_app);const _db=getFirestore(_app);const _prov=new GoogleAuthProvider();
-  const ADMINS=['chj3927@gmail.com'];
+  const _app2=getApps().find(a=>a.name==='hub-data')||initializeApp(_fc,'hub-data');
+  const _db2=getFirestore(_app2);
+  const ALL_CELLS=['여호와샬롬','예수사랑','여호와라파','한마음','밀알','감사','여호와이레','유초등부','중고등부','청년대학','새소식반','청년부'];
+  onSnapshot(collection(_db2,'cells'),(snapshot)=>{
+    snapshot.forEach((docSnap)=>{
+      const data=docSnap.data(),cell=docSnap.id;
+      if(data.members) localStorage.setItem('elim_엘림교회_'+cell+'_Members',JSON.stringify(data.members));
+      if(data.groups)  localStorage.setItem('elim_엘림교회_'+cell+'_Groups', JSON.stringify(data.groups));
+      if(data.schedules) localStorage.setItem('elim_엘림교회_'+cell+'_Schedules',JSON.stringify(data.schedules));
+      if(data.meetings)  localStorage.setItem('elim_엘림교회_'+cell+'_Meetings', JSON.stringify(data.meetings));
+      // 각 셀의 groups를 허브 groups에 자동 병합
+      if(data.groups && Array.isArray(data.groups)) {
+        data.groups.forEach(function(g) {
+          if(g && !groups.includes(g)) groups.push(g);
+        });
+      }
+      // 셀 이름 자체도 groups에 추가
+      if(!groups.includes(cell)) groups.push(cell);
+    });
+    const merged=[];
+    ALL_CELLS.forEach(function(cell){
+      const mems=JSON.parse(localStorage.getItem('elim_엘림교회_'+cell+'_Members')||'[]');
+      mems.forEach(function(m){merged.push(Object.assign({},m,{_sourceCell:cell}));});
+    });
+    if(merged.length>0){
+      members=merged;
+      window.members=merged;
+      localStorage.setItem('elim_엘림교회_엘림교회_Members',JSON.stringify(members));
+      console.log('✅ 허브 동기화:', merged.length, '명');
+    }
+    // Firebase에 있는 셀 목록으로 groups 자동 업데이트
+    const firebaseCells = [];
+    snapshot.forEach((docSnap)=>{ firebaseCells.push(docSnap.id); });
+    if(firebaseCells.length > 0) {
+      // 기존 groups에 없는 Firebase 셀 추가
+      firebaseCells.forEach(cell => {
+        if(!groups.includes(cell)) groups.push(cell);
+      });
+      // Firebase에 없는 기본 셀 제거 (Firebase 기준으로 관리)
+      groups = groups.filter(g => g === APP_TITLE || g === BEST_GROUP || firebaseCells.includes(g));
+      localStorage.setItem('elim_엘림교회_엘림교회_Groups', JSON.stringify(groups));
+    }
+    if(typeof render==='function')render();
+  });
+  
+  // 5초마다 강제 새로고침 (데이터 누락 방지)
+  setInterval(async ()=>{
+    try {
+      const snap = await getDocs(collection(_db2,'cells'));
+      const merged=[];
+      snap.forEach((docSnap)=>{
+        const data=docSnap.data(),cell=docSnap.id;
+        if(data.members) localStorage.setItem('elim_엘림교회_'+cell+'_Members',JSON.stringify(data.members));
+        if(data.groups)  localStorage.setItem('elim_엘림교회_'+cell+'_Groups', JSON.stringify(data.groups));
+        const mems=JSON.parse(localStorage.getItem('elim_엘림교회_'+cell+'_Members')||'[]');
+        mems.forEach(m=>merged.push(Object.assign({},m,{_sourceCell:cell})));
+      });
+      if(merged.length>0){
+        members=merged;
+        window.members=merged;
+        localStorage.setItem('elim_엘림교회_엘림교회_Members',JSON.stringify(members));
+        if(typeof render==='function')render();
+      }
+    }catch(e){}
+  }, 5000);
+  window.syncToFirebase=async function(){
+    const cellMap={};
+    (window.members||[]).forEach(function(m){const cell=m._sourceCell;if(!cell)return;if(!cellMap[cell])cellMap[cell]=[];cellMap[cell].push(m);});
+    for(const [cell,mems] of Object.entries(cellMap)){
+      try{await setDoc(doc(_db2,'cells',cell),{members:mems,lastUpdated:new Date().toISOString()},{merge:true});}catch(e){}
+    }
+  };
+  // 셀 추가/삭제 Firebase 함수
+  window.createCellInFirebase = async function(cellName) {
+    try {
+      const cellRef = doc(_db2, 'cells', cellName);
+      await setDoc(cellRef, {
+        members: [],
+        groups: [cellName, 'BEST_'+cellName],
+        schedules: [],
+        meetings: [],
+        cellName: cellName,
+        createdAt: new Date().toISOString()
+      });
+      console.log('✅ Firebase 셀 생성:', cellName);
+      alert('✅ "'+cellName+'" 셀이 생성됐습니다!\n셀리더 링크:\nfamily.elimch.net/cell.html?name='+encodeURIComponent(cellName));
+    } catch(e) {
+      console.error('❌ 셀 생성 실패:', e.message);
+    }
+  };
 
-  onAuthStateChanged(_auth,async u=>{if(u)await checkUser(u);});
-  window.googleLogin=async function(){try{const r=await signInWithPopup(_auth,_prov);await checkUser(r.user);}catch(e){if(e.code!=='auth/popup-closed-by-user')alert('오류: '+e.message);}};
+  window.deleteCellInFirebase = async function(cellName) {
+    try {
+      const {deleteDoc, doc: doc3} = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+      await deleteDoc(doc3(_db2, 'cells', cellName));
+      console.log('✅ Firebase 셀 삭제:', cellName);
+    } catch(e) {
+      console.error('❌ 셀 삭제 실패:', e.message);
+    }
+  };
 
-  async function checkUser(u){
-    const {uid,email,displayName:name,photoURL:photo}=u;
-    if(ADMINS.includes(email)){enterApp({name,email,role:'admin',approved:true});return;}
-    const snap=await getDoc(doc(_db,'users',uid));
+  window.addEventListener('load',function(){
+    const _o=window.save;
+    window.save=function(){if(typeof _o==='function')_o();window.syncToFirebase();};
+    window.members=window.members||[];
+    setTimeout(()=>window.loadPendingUsers&&window.loadPendingUsers(),2000);
+  });
+</script>
+
+<script type="module">
+  import {initializeApp, getApps} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import {getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import {getFirestore, doc, setDoc, getDoc, onSnapshot, collection, query, where, getDocs, deleteDoc} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  const firebaseConfig={apiKey:"AIzaSyDBmyfa8prUExn3IAA0vaPv844K8oZfvmE",authDomain:"elim-church-2072d.firebaseapp.com",projectId:"elim-church-2072d",storageBucket:"elim-church-2072d.firebasestorage.app",messagingSenderId:"345257256943",appId:"1:345257256943:web:27ebb7bbf67f15eadaf81a"};
+  const fbApp=getApps().find(a=>a.name==='hub-auth')||initializeApp(firebaseConfig,'hub-auth');
+  const auth=getAuth(fbApp);
+  const db=getFirestore(fbApp);
+  const provider=new GoogleAuthProvider();
+
+  onAuthStateChanged(auth,async(user)=>{if(user)await checkUser(user);});
+
+  window.googleLogin=async function(){
+    try{const r=await signInWithPopup(auth,provider);await checkUser(r.user);}
+    catch(e){if(e.code!=='auth/popup-closed-by-user')alert('로그인 오류: '+e.message);}
+  };
+
+  async function checkUser(user){
+    const uid=user.uid,email=user.email,name=user.displayName,photo=user.photoURL;
+    // 관리자 자동 진입
+    const ADMIN_EMAILS=['chj3927@gmail.com'];
+    if(ADMIN_EMAILS.includes(email)){
+      document.getElementById('auth-overlay').classList.add('hidden');
+      window._currentUser={name,email,role:'admin',approved:true};
+      if(typeof render==='function')render();
+      return;
+    }
+    const snap=await getDoc(doc(db,'users',uid));
     if(snap.exists()){
-      const d=snap.data();
-      if(d.approved){enterApp(d);onSnapshot(doc(_db,'users',uid),s=>{if(s.exists()&&!s.data().approved)location.reload();});}
-      else{showPending(name,email);onSnapshot(doc(_db,'users',uid),s=>{if(s.exists()&&s.data().approved)enterApp(s.data());});}
-    }else showRegister(name,email,uid,photo);
+      const ud=snap.data();
+      if(ud.approved){enterApp(ud);onSnapshot(doc(db,'users',uid),(s)=>{if(s.exists()&&!s.data().approved)location.reload();});}
+      else{showPending(name,email);onSnapshot(doc(db,'users',uid),(s)=>{if(s.exists()&&s.data().approved)enterApp(s.data());});}
+    }else{showRegister(name,email,uid,photo);}
   }
+
   function showRegister(name,email,uid,photo){
-    document.getElementById('auth-card').innerHTML=`<h3>추가 정보 입력</h3><p>이름과 소속을 확인해 주세요.</p><input class="auth-input" id="reg-name" placeholder="이름" value="${name||''}"><input class="auth-input" id="reg-cell" placeholder="소속 셀"><button class="auth-btn" onclick="window._sub('${uid}','${email}','${encodeURIComponent(photo||'')}')">가입 신청</button>`;
+    document.getElementById('auth-card').innerHTML=`<h3>추가 정보 입력</h3><p>이름과 소속을 확인해 주세요.</p><input class="auth-input" id="reg-name" placeholder="이름" value="${name||''}"><input class="auth-input" id="reg-cell" placeholder="소속 셀"><button class="auth-btn" onclick="window._submitReg('${uid}','${email}','${encodeURIComponent(photo||'')}')">가입 신청</button>`;
   }
-  window._sub=async function(uid,email,pe){
+  window._submitReg=async function(uid,email,photoEnc){
     const name=document.getElementById('reg-name').value.trim();
     const cell=document.getElementById('reg-cell').value.trim();
     if(!name||!cell){alert('이름과 소속을 입력해 주세요.');return;}
-    await setDoc(doc(_db,'users',uid),{email,name,cell,photo:decodeURIComponent(pe),approved:false,role:'leader',createdAt:new Date().toISOString()});
+    await setDoc(doc(db,'users',uid),{email,name,cell,photo:decodeURIComponent(photoEnc),approved:false,role:'leader',createdAt:new Date().toISOString()});
     showPending(name,email);
-    onSnapshot(doc(_db,'users',uid),s=>{if(s.exists()&&s.data().approved)enterApp(s.data());});
+    onSnapshot(doc(db,'users',uid),(s)=>{if(s.exists()&&s.data().approved)enterApp(s.data());});
   };
   function showPending(name,email){
-    document.getElementById('auth-card').innerHTML=`<div style="background:#FEF3C7;border-radius:12px;padding:18px"><div style="font-size:36px">⏳</div><h3 style="color:#92400E">승인 대기중</h3><p style="color:#B45309">${name}<br>${email}<br>관리자 승인 후 입장됩니다</p></div><span class="auth-signout" onclick="location.reload()">다른 계정으로</span>`;
+    document.getElementById('auth-card').innerHTML=`<div class="auth-pending"><div style="font-size:36px;margin-bottom:8px">⏳</div><h3 style="color:#92400E;margin-bottom:6px">승인 대기중</h3><p style="color:#B45309">${name}님<br>${email}<br><br>관리자 승인 후<br>자동으로 입장됩니다</p></div><span class="auth-signout" onclick="location.reload()">다른 계정으로 로그인</span>`;
   }
-  function enterApp(ud){
+  function enterApp(userData){
     document.getElementById('auth-overlay').classList.add('hidden');
-    window._currentUser=ud;
-    loadCells();
-    if(typeof render==='function')render();
+    window._currentUser=userData;
+    // Firebase 데이터 로드 후 render
+    const loadAndRender = async () => {
+      try {
+        const snap = await getDocs(collection(db,'cells'));
+        snap.forEach((docSnap) => {
+          const data = docSnap.data(), cell = docSnap.id;
+          if(data.members) localStorage.setItem('elim_엘림교회_'+cell+'_Members', JSON.stringify(data.members));
+          if(data.groups)  localStorage.setItem('elim_엘림교회_'+cell+'_Groups',  JSON.stringify(data.groups));
+          if(data.schedules) localStorage.setItem('elim_엘림교회_'+cell+'_Schedules', JSON.stringify(data.schedules));
+          if(data.meetings)  localStorage.setItem('elim_엘림교회_'+cell+'_Meetings',  JSON.stringify(data.meetings));
+        });
+        // 모든 셀 멤버 통합
+        const ALL = ['여호와샬롬','예수사랑','여호와라파','한마음','밀알','감사','여호와이레','유초등부','중고등부','청년대학','새소식반','청년부'];
+        const merged = [];
+        ALL.forEach(cell => {
+          const mems = JSON.parse(localStorage.getItem('elim_엘림교회_'+cell+'_Members')||'[]');
+          mems.forEach(m => merged.push(Object.assign({},m,{_sourceCell:cell})));
+        });
+        if(merged.length > 0) {
+          members = merged;
+          localStorage.setItem('elim_엘림교회_엘림교회_Members', JSON.stringify(members));
+        }
+      } catch(e) { console.log('loadAndRender:', e.message); }
+      if(typeof render==='function') render();
+    };
+    loadAndRender();
   }
-  async function loadCells(){
-    try{
-      const snap=await getDocs(collection(_db,'cells'));
-      const merged=[];
-      snap.forEach(ds=>{
-        const d=ds.data(),cell=ds.id;
-        if(d.members)localStorage.setItem('elim_엘림교회_'+cell+'_Members',JSON.stringify(d.members));
-        if(d.groups) localStorage.setItem('elim_엘림교회_'+cell+'_Groups', JSON.stringify(d.groups));
-        if(d.schedules)localStorage.setItem('elim_엘림교회_'+cell+'_Schedules',JSON.stringify(d.schedules));
-        if(d.meetings) localStorage.setItem('elim_엘림교회_'+cell+'_Meetings', JSON.stringify(d.meetings));
-        const mems=JSON.parse(localStorage.getItem('elim_엘림교회_'+cell+'_Members')||'[]');
-        mems.forEach(m=>merged.push(Object.assign({},m,{_sourceCell:cell})));
-        if(!groups.includes(cell))groups.push(cell);
-      });
-      if(merged.length>0){members=merged;localStorage.setItem('elim_엘림교회_엘림교회_Members',JSON.stringify(members));if(typeof render==='function')render();}
-    }catch(e){console.log('loadCells:',e.message);}
-  }
-  onSnapshot(collection(_db,'cells'),snap=>{
-    const merged=[];
-    snap.forEach(ds=>{
-      const d=ds.data(),cell=ds.id;
-      if(d.members)localStorage.setItem('elim_엘림교회_'+cell+'_Members',JSON.stringify(d.members));
-      if(d.groups) localStorage.setItem('elim_엘림교회_'+cell+'_Groups', JSON.stringify(d.groups));
-      if(d.schedules)localStorage.setItem('elim_엘림교회_'+cell+'_Schedules',JSON.stringify(d.schedules));
-      if(d.meetings) localStorage.setItem('elim_엘림교회_'+cell+'_Meetings', JSON.stringify(d.meetings));
-      const mems=JSON.parse(localStorage.getItem('elim_엘림교회_'+cell+'_Members')||'[]');
-      mems.forEach(m=>merged.push(Object.assign({},m,{_sourceCell:cell})));
-      if(!groups.includes(cell))groups.push(cell);
-    });
-    if(merged.length>0){members=merged;localStorage.setItem('elim_엘림교회_엘림교회_Members',JSON.stringify(members));if(typeof render==='function')render();}
-  });
 
-  window.loadPendingUsers=async function(){
-    try{
-      const s=await getDocs(collection(_db,'users'));
-      window._pendingUsers=[];window._approvedUsers=[];
-      s.forEach(d=>{const u={uid:d.id,...d.data()};if(u.approved)window._approvedUsers.push(u);else window._pendingUsers.push(u);});
-      window._pendingCount=window._pendingUsers.length;
-      if(typeof render==='function')render();
-    }catch(e){}
+  // ── 승인 관리 ──
+  // 대기중 + 승인완료 사용자 로드
+  window.loadPendingUsers = async function() {
+    try {
+      const allSnap = await getDocs(collection(db,'users'));
+      window._pendingUsers = [];
+      window._approvedUsers = [];
+      allSnap.forEach(d => {
+        const u = {uid:d.id,...d.data()};
+        if(u.approved) window._approvedUsers.push(u);
+        else window._pendingUsers.push(u);
+      });
+      window._pendingCount = window._pendingUsers.length;
+      if(typeof render==='function') render();
+    } catch(e) { console.log('loadUsers:',e.message); }
   };
-  window.approveUser=async function(uid,approved){
-    try{
-      const s=await getDocs(collection(_db,'users'));let ud=null;
-      s.forEach(d=>{if(d.id===uid)ud=d.data();});
-      if(!approved){if(!confirm('거절하면 삭제됩니다.'))return;await deleteDoc(doc(_db,'users',uid));alert('거절');}
-      else{
-        await setDoc(doc(_db,'users',uid),{approved:true,approvedAt:new Date().toISOString()},{merge:true});
-        if(ud&&ud.cell){
-          const s2=await getDocs(collection(_db,'cells'));let cd=null;
-          s2.forEach(d=>{if(d.id===ud.cell)cd=d.data();});
-          const em=(cd&&cd.members)||[];
-          if(!em.find(m=>m.email===ud.email)){
-            em.push({id:Date.now(),name:ud.name||'',phone:'',email:ud.email||'',photo:ud.photo||null,emoji:'😊',group:ud.cell,grade:'',fam:[],attendance:[],prayers:[],counseling:[],education:[],catSel:{cell:ud.cell},_fromAuth:true});
-            await setDoc(doc(_db,'cells',ud.cell),{members:em,lastUpdated:new Date().toISOString()},{merge:true});
+
+  // 승인 처리 + 셀원 자동 추가
+  window.approveUser = async function(uid, approved) {
+    try {
+      const userSnap = await getDocs(collection(db,'users'));
+      let userData = null;
+      userSnap.forEach(d => { if(d.id===uid) userData=d.data(); });
+
+      if(!approved) {
+        if(!confirm('거절하면 계정이 삭제됩니다. 진행하시겠습니까?')) return;
+        await deleteDoc(doc(db,'users',uid));
+        alert('거절 완료');
+      } else {
+        // 1. 사용자 승인
+        await setDoc(doc(db,'users',uid),{approved:true,approvedAt:new Date().toISOString()},{merge:true});
+        
+        // 2. 해당 셀 Firebase에 셀원 자동 추가
+        if(userData && userData.cell) {
+          const cellName = userData.cell;
+          const cellRef = doc(db,'cells',cellName);
+          const cellSnap = await getDocs(collection(db,'cells'));
+          let cellData = null;
+          cellSnap.forEach(d => { if(d.id===cellName) cellData=d.data(); });
+          
+          const existingMembers = (cellData && cellData.members) || [];
+          const alreadyExists = existingMembers.find(m => m.email===userData.email);
+          
+          if(!alreadyExists) {
+            const newMember = {
+              id: Date.now(),
+              name: userData.name || '',
+              phone: '',
+              email: userData.email || '',
+              photo: userData.photo || null,
+              emoji: '😊',
+              group: cellName,
+              grade: '',
+              fam: [],
+              kakaoId: '',
+              snsType: '',
+              snsId: '',
+              attendance: [],
+              prayers: [],
+              counseling: [],
+              education: [],
+              catSel: {cell: cellName},
+              _fromAuth: true
+            };
+            existingMembers.push(newMember);
+            await setDoc(cellRef, {members: existingMembers, lastUpdated: new Date().toISOString()}, {merge:true});
           }
         }
-        alert('✅ 승인!'+(ud&&ud.cell?' '+ud.cell+' 셀 추가':''));
+        alert('✅ 승인 완료! ' + (userData&&userData.cell ? userData.cell+' 셀에 추가됐습니다.' : ''));
       }
       window.loadPendingUsers();
-    }catch(e){alert('오류:'+e.message);}
+    } catch(e) { alert('오류: '+e.message); }
   };
-  window.revokeUser=async function(uid){if(!confirm('취소?'))return;try{await setDoc(doc(_db,'users',uid),{approved:false},{merge:true});alert('취소됨');window.loadPendingUsers();}catch(e){}};
-  window.createCellInFirebase=async function(n){try{await setDoc(doc(_db,'cells',n),{members:[],groups:[n,'BEST_'+n],schedules:[],meetings:[],createdAt:new Date().toISOString()});alert('✅ '+n+' 셀 생성!');}catch(e){}};
-  window.deleteCellInFirebase=async function(n){try{await deleteDoc(doc(_db,'cells',n));}catch(e){}};
-  setTimeout(()=>window.loadPendingUsers&&window.loadPendingUsers(),3000);
+
+  // 승인 취소
+  window.revokeUser = async function(uid) {
+    if(!confirm('승인을 취소하시겠습니까?')) return;
+    try {
+      await setDoc(doc(db,'users',uid),{approved:false,revokedAt:new Date().toISOString()},{merge:true});
+      alert('승인 취소됨');
+      window.loadPendingUsers();
+    } catch(e) { alert('오류: '+e.message); }
+  };
+
+  setTimeout(()=>window.loadPendingUsers(),2000);
 </script>
 </body>
 </html>
