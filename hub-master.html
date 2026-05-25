@@ -6515,6 +6515,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   async function checkUser(user){
     const uid=user.uid,email=user.email,name=user.displayName,photo=user.photoURL;
+    // 관리자 자동 진입
+    const ADMIN_EMAILS=['chj3927@gmail.com'];
+    if(ADMIN_EMAILS.includes(email)){
+      document.getElementById('auth-overlay').classList.add('hidden');
+      window._currentUser={name,email,role:'admin',approved:true};
+      if(typeof render==='function')render();
+      return;
+    }
     const snap=await getDoc(doc(db,'users',uid));
     if(snap.exists()){
       const ud=snap.data();

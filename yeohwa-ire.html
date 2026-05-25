@@ -203,17 +203,22 @@ input:focus, textarea:focus, select:focus {
     const userRef = doc(db, 'users', uid);
     const userSnap = await getDoc(userRef);
 
+    // 관리자 이메일 자동 진입
+    const ADMIN_EMAILS = ['chj3927@gmail.com'];
+    if (ADMIN_EMAILS.includes(email)) {
+      enterApp({name, email, role:'admin', approved:true});
+      return;
+    }
+
     if (userSnap.exists()) {
       const userData = userSnap.data();
       if (userData.approved || userData.role === 'admin') {
         enterApp(userData);
-        // 실시간 승인 감지
         onSnapshot(userRef, (snap) => {
           if(snap.exists() && !snap.data().approved && snap.data().role !== 'admin') location.reload();
         });
       } else {
         showPending(name, email);
-        // 실시간 승인 대기
         onSnapshot(userRef, (snap) => {
           if(snap.exists() && (snap.data().approved || snap.data().role === 'admin')) enterApp(snap.data());
         });
