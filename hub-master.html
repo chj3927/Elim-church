@@ -446,11 +446,34 @@ function catDelete(catId){
   save(); saveCatSel(); render();
 }
 function catAddGroup(catId){
-  const gn=prompt('그룹 이름 추가');
-  if(!gn) return;
-  if(!catGroups[catId]) catGroups[catId]=[];
-  if(catGroups[catId].includes(gn)){ alert('이미 존재합니다'); return; }
-  catGroups[catId].push(gn);
+  // 이미 추가된 셀 제외한 목록
+  const already = catGroups[catId] || [];
+  const available = groups.filter(g => g !== APP_TITLE && g !== BEST_GROUP && !already.includes(g));
+  
+  if(available.length === 0){
+    alert('추가할 수 있는 셀이 없습니다');
+    return;
+  }
+  
+  // 선택 목록 표시
+  const listStr = available.map((g,i) => (i+1)+'. '+g).join('\n');
+  const input = prompt('추가할 셀 번호를 입력하세요:\n\n'+listStr);
+  if(!input) return;
+  
+  const idx = parseInt(input) - 1;
+  if(isNaN(idx) || idx < 0 || idx >= available.length){
+    // 번호 아닌 경우 직접 입력으로 처리
+    const gn = input.trim();
+    if(!gn) return;
+    if(!catGroups[catId]) catGroups[catId]=[];
+    if(catGroups[catId].includes(gn)){ alert('이미 존재합니다'); return; }
+    catGroups[catId].push(gn);
+  } else {
+    const gn = available[idx];
+    if(!catGroups[catId]) catGroups[catId]=[];
+    if(catGroups[catId].includes(gn)){ alert('이미 존재합니다'); return; }
+    catGroups[catId].push(gn);
+  }
   save(); render();
 }
 function catDelGroup(catId, g){
