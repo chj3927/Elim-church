@@ -647,11 +647,9 @@ groups.splice(1, 0, BEST_GROUP);
 // 전체 groups 중복 제거 (순서 유지)
 groups = groups.filter((g, i) => groups.indexOf(g) === i);
 
-// ── 기본 셀그룹 자동 추가 (없을 경우) ──
-const DEFAULT_CELL_GROUPS = ['여호와라파','예수사랑','여호와이레','여호와샬롬','한마음','감사','밀알'];
-DEFAULT_CELL_GROUPS.forEach(g => {
-  if(!groups.includes(g)) groups.push(g);
-});
+// ── 기본 셀그룹: Firebase에서 동적으로 받음 (하드코딩 제거) ──
+// Firebase cells 컬렉션에 있는 셀만 표시
+// groups는 Firebase onSnapshot에서 자동으로 업데이트됨
 
 
 let view   = 'list';   // 'list' | 'detail'
@@ -6500,6 +6498,18 @@ document.addEventListener('DOMContentLoaded', ()=>{
       window.members=merged;
       localStorage.setItem('elim_엘림교회_엘림교회_Members',JSON.stringify(members));
       console.log('✅ 허브 동기화:', merged.length, '명');
+    }
+    // Firebase에 있는 셀 목록으로 groups 자동 업데이트
+    const firebaseCells = [];
+    snapshot.forEach((docSnap)=>{ firebaseCells.push(docSnap.id); });
+    if(firebaseCells.length > 0) {
+      // 기존 groups에 없는 Firebase 셀 추가
+      firebaseCells.forEach(cell => {
+        if(!groups.includes(cell)) groups.push(cell);
+      });
+      // Firebase에 없는 기본 셀 제거 (Firebase 기준으로 관리)
+      groups = groups.filter(g => g === APP_TITLE || g === BEST_GROUP || firebaseCells.includes(g));
+      localStorage.setItem('elim_엘림교회_엘림교회_Groups', JSON.stringify(groups));
     }
     if(typeof render==='function')render();
   });
