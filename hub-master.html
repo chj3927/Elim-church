@@ -6475,7 +6475,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 <!-- Firebase 허브 데이터 통합 -->
 <script type="module">
   import {initializeApp, getApps} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import {getFirestore, collection, doc, setDoc, onSnapshot} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import {getFirestore, collection, doc, setDoc, onSnapshot, getDocs} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
   const _fc={apiKey:"AIzaSyDBmyfa8prUExn3IAA0vaPv844K8oZfvmE",authDomain:"elim-church-2072d.firebaseapp.com",projectId:"elim-church-2072d",storageBucket:"elim-church-2072d.firebasestorage.app",messagingSenderId:"345257256943",appId:"1:345257256943:web:27ebb7bbf67f15eadaf81a"};
   const _app2=getApps().find(a=>a.name==='hub-data')||initializeApp(_fc,'hub-data');
   const _db2=getFirestore(_app2);
@@ -6493,9 +6493,35 @@ document.addEventListener('DOMContentLoaded', ()=>{
       const mems=JSON.parse(localStorage.getItem('elim_엘림교회_'+cell+'_Members')||'[]');
       mems.forEach(function(m){merged.push(Object.assign({},m,{_sourceCell:cell}));});
     });
-    if(merged.length>0){members=merged;localStorage.setItem('elim_엘림교회_엘림교회_Members',JSON.stringify(members));}
+    if(merged.length>0){
+      members=merged;
+      window.members=merged;
+      localStorage.setItem('elim_엘림교회_엘림교회_Members',JSON.stringify(members));
+      console.log('✅ 허브 동기화:', merged.length, '명');
+    }
     if(typeof render==='function')render();
   });
+  
+  // 5초마다 강제 새로고침 (데이터 누락 방지)
+  setInterval(async ()=>{
+    try {
+      const snap = await getDocs(collection(_db2,'cells'));
+      const merged=[];
+      snap.forEach((docSnap)=>{
+        const data=docSnap.data(),cell=docSnap.id;
+        if(data.members) localStorage.setItem('elim_엘림교회_'+cell+'_Members',JSON.stringify(data.members));
+        if(data.groups)  localStorage.setItem('elim_엘림교회_'+cell+'_Groups', JSON.stringify(data.groups));
+        const mems=JSON.parse(localStorage.getItem('elim_엘림교회_'+cell+'_Members')||'[]');
+        mems.forEach(m=>merged.push(Object.assign({},m,{_sourceCell:cell})));
+      });
+      if(merged.length>0){
+        members=merged;
+        window.members=merged;
+        localStorage.setItem('elim_엘림교회_엘림교회_Members',JSON.stringify(members));
+        if(typeof render==='function')render();
+      }
+    }catch(e){}
+  }, 5000);
   window.syncToFirebase=async function(){
     const cellMap={};
     (window.members||[]).forEach(function(m){const cell=m._sourceCell;if(!cell)return;if(!cellMap[cell])cellMap[cell]=[];cellMap[cell].push(m);});
