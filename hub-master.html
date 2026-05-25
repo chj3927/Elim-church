@@ -150,6 +150,22 @@ header{z-index:9999; pointer-events:auto; transform:translateZ(0);}
 .hdr-btn{pointer-events:auto;}
 
 </style>
+
+<script>
+// 로컬/개발 환경에서 바로 진입
+const _proto = window.location.protocol;
+const _host = window.location.hostname;
+const _isLocal = _proto === 'file:' || _proto === 'content:' || _host === 'localhost' || _host === '127.0.0.1';
+if(_isLocal) {
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+      const overlay = document.getElementById('auth-overlay');
+      if(overlay) overlay.classList.add('hidden');
+      if(typeof render === 'function') render();
+    }, 300);
+  });
+}
+</script>
 </head>
 <body>
 
