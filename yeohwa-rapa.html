@@ -3123,15 +3123,18 @@ html += '<div style="font-size:12px;font-weight:800;color:#1D4ED8">📋 모임 �
     appId:"1:345257256943:web:27ebb7bbf67f15eadaf81a"
   };
   
-  // 인증 앱과 동일한 인스턴스 사용 (auth 공유)
-  const _appName = 'cell_yeohwa-rapa';
+  // 로그인 앱과 동일한 인스턴스 사용 (auth 공유)
+  const _appName = 'auth_여호와라파';
   const _fa = getApps().find(a=>a.name===_appName) || initializeApp(_fc, _appName);
   const _fd = getFirestore(_fa);
   const _auth = getAuth(_fa);
   const _fr = doc(_fd, 'cells', '여호와라파');
+  let _unsub = null;
 
-  // Firebase → 로컬 동기화
-  onSnapshot(_fr, (snap) => {
+  // Firebase → 로컬 동기화 (인증 후에만)
+  function _startSync() {
+    if(_unsub) return;
+    _unsub = onSnapshot(_fr, (snap) => {
     if(!snap.exists()) return;
     const d = snap.data();
     if(d.members)   { members=d.members;   localStorage.setItem('elim_엘림교회_여호와라파_Members',   JSON.stringify(members)); }
@@ -3139,7 +3142,8 @@ html += '<div style="font-size:12px;font-weight:800;color:#1D4ED8">📋 모임 �
     if(d.schedules) { schedules=d.schedules; localStorage.setItem('elim_엘림교회_여호와라파_Schedules', JSON.stringify(schedules)); }
     if(d.meetings)  { meetings=d.meetings;   localStorage.setItem('elim_엘림교회_여호와라파_Meetings',  JSON.stringify(meetings)); }
     if(typeof render==='function') render();
-  });
+    });
+  }
 
   // 저장 함수 - 인증 확인 후 저장
   window.syncToFirebase = async function() {
@@ -3163,13 +3167,13 @@ html += '<div style="font-size:12px;font-weight:800;color:#1D4ED8">📋 모임 �
     }
   };
 
-  // Auth 상태 감지 → 로그인되면 즉시 동기화
+  // Auth 상태 감지 → 로그인되면 즉시 동기화 시작
   _auth.onAuthStateChanged((user) => {
     if(user) {
       window._firebaseUser = user;
       console.log('🔐 인증 확인:', user.email);
-      // 로그인 확인 후 현재 데이터 업로드
-      setTimeout(() => window.syncToFirebase(), 1000);
+      _startSync();
+      setTimeout(() => window.syncToFirebase(), 1500);
     }
   });
 </script>
