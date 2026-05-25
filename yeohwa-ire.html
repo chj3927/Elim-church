@@ -605,7 +605,8 @@ function markAtt(mid, status) {
       return {...m,attendance:att};
     });
   }
-  save(); window._keepScroll=true; render();
+  window._keepScroll = true;
+  save(); render();
 }
 function addAttRec() {
   if(!newAttRec.date){ alert('날짜를 선택하세요'); return; }
@@ -3005,9 +3006,12 @@ html += '<div style="font-size:12px;font-weight:800;color:#1D4ED8">📋 모임 �
     '</div></div></div>';
   }
 
+  const _sy = window.scrollY;
   document.getElementById('app').innerHTML = html;
-  // 출석체크 중일 때는 스크롤 유지
-  if(!window._keepScroll) {
+  // 출석 모달 열려있거나 _keepScroll 이면 스크롤 유지
+  if(mAttendance || window._keepScroll) {
+    window.scrollTo({top: _sy, behavior:'instant'});
+  } else {
     window.scrollTo({top:0,behavior:'instant'});
   }
   window._keepScroll = false;
