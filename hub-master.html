@@ -647,9 +647,14 @@ groups.splice(1, 0, BEST_GROUP);
 // 전체 groups 중복 제거 (순서 유지)
 groups = groups.filter((g, i) => groups.indexOf(g) === i);
 
-// ── 기본 셀그룹: Firebase에서 동적으로 받음 (하드코딩 제거) ──
-// Firebase cells 컬렉션에 있는 셀만 표시
-// groups는 Firebase onSnapshot에서 자동으로 업데이트됨
+// ── 기본 셀그룹 (Firebase에 없어도 기본 표시) ──
+const DEFAULT_CELL_GROUPS = [
+  '여호와샬롬','예수사랑','여호와라파','한마음','밀알','감사','여호와이레',
+  '새소식반','유초등부','중고등부','청년대학'
+];
+DEFAULT_CELL_GROUPS.forEach(g => {
+  if(!groups.includes(g)) groups.push(g);
+});
 
 
 let view   = 'list';   // 'list' | 'detail'
@@ -1064,10 +1069,14 @@ function delEdu(id) {
 //  GROUPS
 // ═══════════════════════════════════
 function addGroup() {
-  const n=prompt('새 그룹 이름:');
+  const n=prompt('새 셀그룹 이름:');
   if(!n) return;
   if(groups.includes(n)){ alert('이미 존재하는 그룹입니다'); return; }
   groups.push(n); save(); render();
+  // Firebase cells 컬렉션에 새 셀 문서 생성
+  if(typeof window.createCellInFirebase === 'function') {
+    window.createCellInFirebase(n);
+  }
 }
 function openRename(g){ renaming=g; renameVal=g; mRename=true; render(); }
 function confirmRename() {
@@ -1083,9 +1092,13 @@ function confirmRename() {
   save(); mRename=false; renaming=''; renameVal=''; alert('변경되었습니다!'); render();
 }
 function delGroup(g) {
-  if(!confirm('"'+g+'" 그룹을 삭제하시겠습니까?')) return;
+  if(!confirm('"'+g+'" 그룹을 삭제하시겠습니까?\n\nFirebase에서도 삭제됩니다.')) return;
   groups=groups.filter(x=>x!==g); save();
   if(selGrp===g) selGrp='all'; render();
+  // Firebase cells 컬렉션에서 삭제
+  if(typeof window.deleteCellInFirebase === 'function') {
+    window.deleteCellInFirebase(g);
+  }
 }
 function changeGrp(mid, g) {
   members=members.map(m=>m.id===mid?{...m,group:g}:m); save();
@@ -3732,6 +3745,15 @@ function getFiltered() {
       // 허브: _sourceCell로 셀 구분, 일반 앱: group으로 구분
       if(m._sourceCell) return m._sourceCell===selGrp;
       return m.group===selGrp;
+    }
+
+    // 허브: _sourceCell 기반으로 분류 필터링
+    // catGroups[cSel]에 해당 셀이 포함되면 표시
+    if(m._sourceCell) {
+      const cellsInCat = catGroups[cSel] || [];
+      if(cellsInCat.length === 0) return true; // 분류에 셀 미지정이면 전체
+      if(!pick || pick === 'all') return cellsInCat.includes(m._sourceCell);
+      return cellsInCat.includes(m._sourceCell) && (pick === 'all' || m._sourceCell === pick);
     }
 
     const cs=(m.catSel||{});
@@ -6487,6 +6509,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
       if(data.groups)  localStorage.setItem('elim_엘림교회_'+cell+'_Groups', JSON.stringify(data.groups));
       if(data.schedules) localStorage.setItem('elim_엘림교회_'+cell+'_Schedules',JSON.stringify(data.schedules));
       if(data.meetings)  localStorage.setItem('elim_엘림교회_'+cell+'_Meetings', JSON.stringify(data.meetings));
+      // 각 셀의 groups를 허브 groups에 자동 병합
+      if(data.groups && Array.isArray(data.groups)) {
+        data.groups.forEach(function(g) {
+          if(g && !groups.includes(g)) groups.push(g);
+        });
+      }
+      // 셀 이름 자체도 groups에 추가
+      if(!groups.includes(cell)) groups.push(cell);
     });
     const merged=[];
     ALL_CELLS.forEach(function(cell){
@@ -6541,6 +6571,35 @@ document.addEventListener('DOMContentLoaded', ()=>{
       try{await setDoc(doc(_db2,'cells',cell),{members:mems,lastUpdated:new Date().toISOString()},{merge:true});}catch(e){}
     }
   };
+  // 셀 추가/삭제 Firebase 함수
+  window.createCellInFirebase = async function(cellName) {
+    try {
+      const cellRef = doc(_db2, 'cells', cellName);
+      await setDoc(cellRef, {
+        members: [],
+        groups: [cellName, 'BEST_'+cellName],
+        schedules: [],
+        meetings: [],
+        cellName: cellName,
+        createdAt: new Date().toISOString()
+      });
+      console.log('✅ Firebase 셀 생성:', cellName);
+      alert('✅ "'+cellName+'" 셀이 생성됐습니다!\n셀리더 링크:\nfamily.elimch.net/cell.html?name='+encodeURIComponent(cellName));
+    } catch(e) {
+      console.error('❌ 셀 생성 실패:', e.message);
+    }
+  };
+
+  window.deleteCellInFirebase = async function(cellName) {
+    try {
+      const {deleteDoc, doc: doc3} = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+      await deleteDoc(doc3(_db2, 'cells', cellName));
+      console.log('✅ Firebase 셀 삭제:', cellName);
+    } catch(e) {
+      console.error('❌ 셀 삭제 실패:', e.message);
+    }
+  };
+
   window.addEventListener('load',function(){
     const _o=window.save;
     window.save=function(){if(typeof _o==='function')_o();window.syncToFirebase();};
