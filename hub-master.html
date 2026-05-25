@@ -790,6 +790,8 @@ function save() {
   localStorage.setItem('elim_엘림교회_엘림교회_CatGroups',  JSON.stringify(catGroups));
   localStorage.setItem('elim_엘림교회_엘림교회_selCat',     String(selCat||'cell'));
   localStorage.setItem('elim_엘림교회_엘림교회_selCatPick', JSON.stringify(selCatPick||{}));
+  // 허브 수정 → 해당 셀의 Firebase 문서 업데이트
+  if(typeof window.syncCellsToFirebase === 'function') window.syncCellsToFirebase();
 }
 
 // ═══════════════════════════════════
@@ -6536,6 +6538,32 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }catch(e){alert('오류:'+e.message);}
   };
   window.revokeUser=async function(uid){if(!confirm('취소?'))return;try{await setDoc(doc(_db,'users',uid),{approved:false},{merge:true});alert('취소됨');window.loadPendingUsers();}catch(e){}};
+  // 허브에서 수정한 셀 데이터를 Firebase로 업로드
+  window.syncCellsToFirebase=async function(){
+    try{
+      // members를 _sourceCell별로 그룹핑
+      const byCell = {};
+      (members||[]).forEach(m=>{
+        const cell = m._sourceCell;
+        if(!cell) return;
+        if(!byCell[cell]) byCell[cell] = [];
+        // _sourceCell 제거 후 저장
+        const clean = Object.assign({}, m);
+        delete clean._sourceCell;
+        byCell[cell].push(clean);
+      });
+      // 각 셀별 Firebase 업데이트
+      for(const cell in byCell){
+        await setDoc(doc(_db,'cells',cell), {
+          members: byCell[cell],
+          lastUpdated: new Date().toISOString(),
+          updatedBy: 'hub_admin'
+        }, {merge: true});
+        console.log('✅ 허브 → Firebase:', cell, byCell[cell].length, '명');
+      }
+    }catch(e){console.error('❌ 허브 저장 실패:', e.message);}
+  };
+  
   window.createCellInFirebase=async function(n){try{await setDoc(doc(_db,'cells',n),{members:[],groups:[n,'BEST_'+n],schedules:[],meetings:[],createdAt:new Date().toISOString()});alert('✅ '+n+' 셀 생성!');}catch(e){}};
   window.deleteCellInFirebase=async function(n){try{await deleteDoc(doc(_db,'cells',n));}catch(e){}};
   setTimeout(()=>window.loadPendingUsers&&window.loadPendingUsers(),3000);
