@@ -261,7 +261,7 @@ function catName(id){ const c=catById(id); return c?c.name:id; }
 
 function getCatGroupList(catId){
   if(catId==='cell'){
-    return groups.filter(g=>g && g!==BEST_GROUP);
+    return (selCat==='cell') ? _cellOnlyGroups() : groups.filter(g=>g && g!==BEST_GROUP);
   }
   return (catGroups[catId]||[]).filter(Boolean);
 }
@@ -635,10 +635,24 @@ groups.splice(1, 0, BEST_GROUP);
 groups = groups.filter((g, i) => groups.indexOf(g) === i);
 
 // ── 기본 셀그룹 자동 추가 (없을 경우) ──
-const DEFAULT_CELL_GROUPS = ['여호와라파','예수사랑','여호와이레','여호와샬롬','한마음','감사','밀알','청년부'];
+const DEFAULT_CELL_GROUPS = ['여호와라파','예수사랑','여호와이레','여호와샬롬','한마음','감사','밀알'];
 DEFAULT_CELL_GROUPS.forEach(g => {
   if(!groups.includes(g)) groups.push(g);
 });
+
+// 다른 분류(edu, deacon 등)에 속한 셀인지 확인
+function _isInOtherCategory(cellName) {
+  for(const catId in catGroups) {
+    if(catId === 'cell') continue;
+    if((catGroups[catId]||[]).includes(cellName)) return true;
+  }
+  return false;
+}
+
+// 셀그룹 탭용 - 다른 분류에 속하지 않은 그룹만
+function _cellOnlyGroups() {
+  return groups.filter(g => g && g !== BEST_GROUP && !_isInOtherCategory(g));
+}
 
 
 let view   = 'list';   // 'list' | 'detail'
@@ -4832,7 +4846,7 @@ if(mShare) {
     html += '</div></div>';
 
     // ── 추가 수신자 (다른 그룹에서 선택) ──
-    const allGrps=groups.filter(g=>g&&g!==BEST_GROUP);
+    const allGrps = (selCat==='cell') ? _cellOnlyGroups() : groups.filter(g=>g&&g!==BEST_GROUP);
     html += '<div style="border:2px solid #C96442;border-radius:12px;overflow:hidden">';
     html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 13px;background:#FFF8F5;border-bottom:1px solid #F4C6B0">';
     html += '<span style="font-size:12px;font-weight:800;color:#C96442">➕ 추가 수신자 <span style="color:#9CA3AF;font-weight:600">'+(extraSelCnt?extraSelCnt+'명 선택':'그룹 선택 후 추가')+'</span></span>';
@@ -4971,7 +4985,7 @@ html += '<div style="font-size:12px;font-weight:800;color:#1D4ED8;letter-spacing
       var cid=(s.catId||'cell'), selG=s.group||'all';
       if(cid==='cell'){
         html += '<option value="all"'+(selG==='all'?' selected':'')+'>전체</option>';
-        groups.filter(function(g){return g!==BEST_GROUP;}).forEach(function(g){
+        ((selCat==='cell')?_cellOnlyGroups():groups.filter(function(g){return g!==BEST_GROUP;})).forEach(function(g){
           html += '<option value="'+g+'"'+(selG===g?' selected':'')+'>'+g+'</option>';
         });
       } else {
@@ -5419,7 +5433,7 @@ if(s.autoSmsOn){
       var cid=(mt.catId||'cell'), selG=mt.group||'all';
       if(cid==='cell'){
         html += '<option value="all"'+(selG==='all'?' selected':'')+'>전체</option>';
-        groups.filter(g=>g!==BEST_GROUP).forEach(g=>{ html += '<option value="'+g+'"'+(selG===g?' selected':'')+'>'+g+'</option>'; });
+        ((selCat==='cell')?_cellOnlyGroups():groups.filter(g=>g!==BEST_GROUP)).forEach(g=>{ html += '<option value="'+g+'"'+(selG===g?' selected':'')+'>'+g+'</option>'; });
       } else {
         html += '<option value="all"'+(selG==='all'?' selected':'')+'>전체</option>';
         (getCatGroupList(cid)||[]).forEach(g=>{ html += '<option value="'+g+'"'+(selG===g?' selected':'')+'>'+g+'</option>'; });
