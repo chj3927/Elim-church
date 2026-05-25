@@ -3110,49 +3110,63 @@ html += '<div style="font-size:12px;font-weight:800;color:#1D4ED8">📋 모임 �
 
 </script>
 
+
 <script type="module">
   import {initializeApp, getApps} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import {getFirestore, doc, setDoc, onSnapshot} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-  const _fc={apiKey:"AIzaSyDBmyfa8prUExn3IAA0vaPv844K8oZfvmE",authDomain:"elim-church-2072d.firebaseapp.com",projectId:"elim-church-2072d",storageBucket:"elim-church-2072d.firebasestorage.app",messagingSenderId:"345257256943",appId:"1:345257256943:web:27ebb7bbf67f15eadaf81a"};
-  const _fa=getApps().find(a=>a.name==='hanmaeum')||initializeApp(_fc,'hanmaeum');
-  const _fd=getFirestore(_fa);
-  const _fr=doc(_fd,'cells','한마음');
-  onSnapshot(_fr,(snap)=>{
-    if(!snap.exists())return;
-    const d=snap.data();
-    if(d.members){members=d.members;localStorage.setItem('elim_엘림교회_한마음_Members',JSON.stringify(members));}
-    if(d.groups){groups=d.groups;localStorage.setItem('elim_엘림교회_한마음_Groups',JSON.stringify(groups));}
-    if(d.schedules){schedules=d.schedules;localStorage.setItem('elim_엘림교회_한마음_Schedules',JSON.stringify(schedules));}
-    if(d.meetings){meetings=d.meetings;localStorage.setItem('elim_엘림교회_한마음_Meetings',JSON.stringify(meetings));}
-    if(typeof render==='function')render();
+  import {getFirestore, doc, setDoc, onSnapshot, getDoc} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  
+  const _fc = {
+    apiKey:"AIzaSyDBmyfa8prUExn3IAA0vaPv844K8oZfvmE",
+    authDomain:"elim-church-2072d.firebaseapp.com",
+    projectId:"elim-church-2072d",
+    storageBucket:"elim-church-2072d.firebasestorage.app",
+    messagingSenderId:"345257256943",
+    appId:"1:345257256943:web:27ebb7bbf67f15eadaf81a"
+  };
+  const _fa = getApps().find(a=>a.name==='hanmaeum') || initializeApp(_fc, 'hanmaeum');
+  const _fd = getFirestore(_fa);
+  const _fr = doc(_fd, 'cells', '한마음');
+  
+  // Firebase → 로컬 동기화
+  onSnapshot(_fr, (snap) => {
+    if(!snap.exists()) return;
+    const d = snap.data();
+    if(d.members)   { members=d.members;   localStorage.setItem('elim_엘림교회_한마음_Members',   JSON.stringify(members)); }
+    if(d.groups)    { groups=d.groups;     localStorage.setItem('elim_엘림교회_한마음_Groups',    JSON.stringify(groups)); }
+    if(d.schedules) { schedules=d.schedules; localStorage.setItem('elim_엘림교회_한마음_Schedules', JSON.stringify(schedules)); }
+    if(d.meetings)  { meetings=d.meetings;   localStorage.setItem('elim_엘림교회_한마음_Meetings',  JSON.stringify(meetings)); }
+    if(typeof render==='function') render();
   });
-  window.syncToFirebase=async function(){
-    try{
-      await setDoc(_fr,{
-        members:window._members||members||[],
-        groups:window._groups||groups||[],
-        schedules:window._schedules||schedules||[],
-        meetings:window._meetings||meetings||[],
-        lastUpdated:new Date().toISOString()
-      });
-      console.log('✅ Firebase 저장 완료: 한마음');
-    }catch(e){console.log('sync fail',e.message);}
+
+  // syncToFirebase 전역 등록
+  window.syncToFirebase = async function() {
+    try {
+      const data = {
+        members:   typeof members   !== 'undefined' ? members   : [],
+        groups:    typeof groups    !== 'undefined' ? groups    : [],
+        schedules: typeof schedules !== 'undefined' ? schedules : [],
+        meetings:  typeof meetings  !== 'undefined' ? meetings  : [],
+        lastUpdated: new Date().toISOString(),
+        cellName: '한마음'
+      };
+      await setDoc(_fr, data);
+      console.log('✅ Firebase 저장:', '한마음', data.members.length, '명');
+    } catch(e) {
+      console.error('❌ Firebase 실패:', e.message);
+    }
   };
-  
-  // save 함수 즉시 오버라이드 (load 이벤트 대기 없이)
-  const _origSave = window.save;
-  window.save = function() {
-    if(typeof _origSave === 'function') _origSave();
-    window.syncToFirebase();
-  };
-  
-  // 전역 변수 동기화
-  setInterval(function() {
-    window._members = typeof members !== 'undefined' ? members : [];
-    window._groups = typeof groups !== 'undefined' ? groups : [];
-    window._schedules = typeof schedules !== 'undefined' ? schedules : [];
-    window._meetings = typeof meetings !== 'undefined' ? meetings : [];
-  }, 1000);
+
+  // 앱 로드 후 즉시 동기화 테스트
+  window.addEventListener('load', () => {
+    console.log('🔥 Firebase 준비완료:', '한마음');
+    // 3초 후 현재 데이터 강제 업로드
+    setTimeout(() => {
+      if(typeof members !== 'undefined' && members.length > 0) {
+        window.syncToFirebase();
+      }
+    }, 3000);
+  });
 </script>
+
 </body>
 </html>
