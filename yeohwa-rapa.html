@@ -3145,12 +3145,24 @@ html += '<div style="font-size:12px;font-weight:800;color:#1D4ED8">📋 모임 �
     });
   }
 
-  // 저장 함수 - 어떤 상태에서도 시도
+  // 저장 함수 - 로그인 + 데이터 검증 후에만 저장
   window.syncToFirebase = async function() {
     try {
-      // 인증 상태 강제 갱신
-      await _auth.authStateReady && await _auth.authStateReady();
-      const user = _auth.currentUser || window._firebaseUser || (window.firebaseAuth && window.firebaseAuth.currentUser);
+      const user = _auth.currentUser || window._firebaseUser;
+      
+      // 안전 1: 로그인 안 되면 저장 안 함
+      if(!user) {
+        console.log('⚠️ 비로그인 - 로컬만 저장');
+        return;
+      }
+      
+      // 안전 2: 로컬 데이터가 비어있으면 저장 안 함 (덮어쓰기 방지)
+      const hasMembers = typeof members !== 'undefined' && members.length > 0;
+      const hasGroups = typeof groups !== 'undefined' && groups.length > 0;
+      if(!hasMembers && !hasGroups) {
+        console.log('⚠️ 로컬 데이터 없음 - Firebase 보호');
+        return;
+      }
       
       const data = {
         members:   typeof members   !== 'undefined' ? members   : [],
@@ -3159,7 +3171,7 @@ html += '<div style="font-size:12px;font-weight:800;color:#1D4ED8">📋 모임 �
         meetings:  typeof meetings  !== 'undefined' ? meetings  : [],
         lastUpdated: new Date().toISOString(),
         cellName: '여호와라파',
-        updatedBy: user ? user.email : 'unknown'
+        updatedBy: user.email
       };
       
       await setDoc(_fr, data);
@@ -3177,12 +3189,6 @@ html += '<div style="font-size:12px;font-weight:800;color:#1D4ED8">📋 모임 �
       _startSync();
     }
   });
-  
-  // 페이지 로드 5초 후 - 로그인 상태 무시하고 sync 시도
-  setTimeout(() => {
-    console.log('🔄 강제 동기화 시도');
-    window.syncToFirebase();
-  }, 5000);
 </script>
 
 
